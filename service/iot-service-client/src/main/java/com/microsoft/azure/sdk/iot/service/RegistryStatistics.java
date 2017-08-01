@@ -5,6 +5,8 @@
 
 package com.microsoft.azure.sdk.iot.service;
 
+import com.microsoft.azure.sdk.iot.deps.serializer.RegistryStatisticsParser;
+
 public class RegistryStatistics
 {
     private long totalDeviceCount;
@@ -31,5 +33,16 @@ public class RegistryStatistics
     public long getTotalDeviceCount()
     {
         return totalDeviceCount;
+    }
+
+    public static RegistryStatistics fromRegistryStatisticsParser(RegistryStatisticsParser registryStatisticsParser)
+    {
+        //Codes_SRS_SERVICE_SDK_JAVA_REGISTRY_STATISTICS_34_001: [This method shall convert the provided parser into a RegistryStatistics object and return it]
+        RegistryStatistics registryStatistics = new RegistryStatistics();
+        registryStatistics.totalDeviceCount = registryStatisticsParser.totalDeviceCount;
+        registryStatistics.enabledDeviceCount = registryStatisticsParser.enabledDeviceCount;
+        registryStatistics.disabledDeviceCount = registryStatisticsParser.disabledDeviceCount;
+
+        return registryStatistics;
     }
 }

@@ -6,7 +6,9 @@
 package com.microsoft.azure.sdk.iot.service;
 
 import com.google.gson.annotations.SerializedName;
+import com.microsoft.azure.sdk.iot.deps.serializer.*;
 import com.microsoft.azure.sdk.iot.service.auth.SymmetricKey;
+import com.microsoft.azure.sdk.iot.service.auth.X509Thumbprint;
 
 import javax.crypto.KeyGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -18,7 +20,6 @@ import java.util.Base64;
  */
 public class Device
 {
-    protected final String encryptionMethod = "AES";
     protected final String utcTimeDefault = "0001-01-01T00:00:00";
 
     /**
@@ -27,7 +28,7 @@ public class Device
      * If input device status and symmetric key are null then they will be auto generated.
      *
      * @param deviceId - String containing the device name
-     * @param deviceId - Device status. If parameter is null, then the status will be set to Enabled.
+     * @param status - Device status. If parameter is null, then the status will be set to Enabled.
      * @param symmetricKey - Device key. If parameter is null, then the key will be auto generated.
      * @return Device object
      * @throws IllegalArgumentException This exception is thrown if {@code deviceId} is {@code null} or empty.
@@ -44,15 +45,35 @@ public class Device
 
         // Codes_SRS_SERVICE_SDK_JAVA_DEVICE_12_003: [The function shall create a new instance
         // of Device using the given deviceId and return it]
-        Device device = new Device(deviceId, status, symmetricKey);
-        return device;
+        return new Device(deviceId, status, symmetricKey);
+    }
+
+    /**
+     * Static create function
+     * Creates device object using the given name that will use a Certificate Authority signed certificate for authentication.
+     * If input device status is null then it will be auto generated.
+     *
+     * @param deviceId - String containing the device name
+     * @param authenticationType - The type of authentication used by this device.
+     * @return Device object
+     * @throws IllegalArgumentException This exception is thrown if {@code deviceId} is {@code null} or empty.
+     */
+    public static Device createDevice(String deviceId, AuthenticationType authenticationType)
+    {
+        // Codes_SRS_SERVICE_SDK_JAVA_DEVICE_34_008: [The function shall throw IllegalArgumentException if the device Id is empty or null]
+        if (Tools.isNullOrEmpty(deviceId))
+        {
+            throw new IllegalArgumentException(deviceId);
+        }
+
+        return new Device(deviceId, authenticationType);
     }
 
     /**
      * Create an Device instance using the given device name
      *
      * @param deviceId Name of the device (used as device id)
-     * @param deviceId - Device status. If parameter is null, then the status will be set to Enabled.
+     * @param status - Device status. If parameter is null, then the status will be set to Enabled.
      * @param symmetricKey - Device key. If parameter is null, then the key will be auto generated.
      * @throws NoSuchAlgorithmException This exception is thrown if the encryption method is not supported by the keyGenerator
      */
@@ -70,34 +91,44 @@ public class Device
         // the input device status and symmetric key into a member variable]
         // Codes_SRS_SERVICE_SDK_JAVA_DEVICE_12_005: [If the input symmetric key is empty, the constructor shall create
         // a new SymmetricKey instance using AES encryption and store it into a member variable]
-        KeyGenerator keyGenerator = KeyGenerator.getInstance(encryptionMethod);
         if (symmetricKey == null)
         {
-            symmetricKey = new SymmetricKey();
-            Base64.Encoder encoder = Base64.getEncoder();
-            symmetricKey.setPrimaryKey(encoder.encodeToString(keyGenerator.generateKey().getEncoded()));
-            symmetricKey.setSecondaryKey(encoder.encodeToString(keyGenerator.generateKey().getEncoded()));
+            this.authentication = new Authentication(AuthenticationType.sas);
         }
-        this.symmetricKey = symmetricKey;
+        else
+        {
+            this.authentication = new Authentication(symmetricKey);
+        }
 
         // Codes_SRS_SERVICE_SDK_JAVA_DEVICE_12_006: [The constructor shall initialize all properties to default values]
+        setPropertiesToDefaultValues();
         this.deviceId = deviceId;
-        this.generationId = "";
-        this.eTag = "";
-
         this.status = status != null ? status : DeviceStatus.Enabled;
-        this.statusReason = "";
-        this.statusUpdatedTime = utcTimeDefault;
-        this.connectionState = DeviceConnectionState.Disconnected;
-        this.connectionStateUpdatedTime = utcTimeDefault;
-        this.lastActivityTime = utcTimeDefault;
-        this.cloudToDeviceMessageCount = 0;
-        this.setForceUpdate(false);
+    }
+
+    /**
+     * Create an Device instance using the given device name that uses a Certificate Authority signed certificate
+     *
+     * @param deviceId Name of the device (used as device id)
+     * @param authenticationType - The type of authentication used by this device.
+     */
+    public Device(String deviceId, AuthenticationType authenticationType)
+    {
+        if (Tools.isNullOrEmpty(deviceId))
+        {
+            throw new IllegalArgumentException(deviceId);
+        }
+
+        //Codes_SRS_SERVICE_SDK_JAVA_DEVICE_34_009: [The function shall set the authentication to use Certificate Authority signed certificates]
+        this.setAuthentication(new Authentication(authenticationType));
+        setPropertiesToDefaultValues();
+        this.deviceId = deviceId;
+        this.status = status != null ? status : DeviceStatus.Enabled;
     }
 
     // Codes_SRS_SERVICE_SDK_JAVA_DEVICE_12_001: [The Device class has the following properties: Id, Etag,
     // Authentication.SymmetricKey, State, StateReason, StateUpdatedTime,
-    // ConnectionState, ConnectionStateUpdatedTime, LastActivityTime]
+    // ConnectionState, ConnectionStateUpdatedTime, LastActivityTime, symmetricKey, thumbprint, status, authentication]
 
     /**
      * Device name
@@ -133,20 +164,13 @@ public class Device
     }
 
     /**
-     * Symmetric key to be used to authorize this device.
-     * This can also be an array (up to 2) of keys to do key rollover.
-     * Format (same as device Id).
-     */
-    protected transient SymmetricKey symmetricKey;
-
-    /**
      * Getter for SymmetricKey object
      *
      * @return The symmetricKey object
      */
     public SymmetricKey getSymmetricKey()
     {
-        return symmetricKey;
+        return this.authentication.getSymmetricKey();
     }
 
     /**
@@ -156,8 +180,16 @@ public class Device
      */
     public void setSymmetricKey(SymmetricKey symmetricKey)
     {
-        this.symmetricKey = symmetricKey;
+        if (this.authentication == null)
+        {
+            this.authentication = new Authentication(symmetricKey);
+        }
+        else
+        {
+            this.authentication.setSymmetricKey(symmetricKey);
+        }
     }
+
 
     /**
      * Getter for PrimaryKey part of the SymmetricKey
@@ -166,7 +198,7 @@ public class Device
      */
     public String getPrimaryKey()
     {
-        return symmetricKey.getPrimaryKey();
+        return getSymmetricKey().getPrimaryKey();
     }
 
     /**
@@ -176,7 +208,54 @@ public class Device
      */
     public String getSecondaryKey()
     {
-        return symmetricKey.getSecondaryKey();
+        return getSymmetricKey().getSecondaryKey();
+    }
+
+    /**
+     * Getter for the whole X509 thumbprint
+     *
+     * @return The X509Thumbprint
+     */
+    public X509Thumbprint getThumbprint()
+    {
+        return authentication.getThumbprint();
+    }
+
+    /**
+     * Setter for X509 thumbprint
+     *
+     * @param x509Thumbprint the thumbprint to set
+     */
+    public void setThumbprint(X509Thumbprint x509Thumbprint)
+    {
+        if (this.authentication == null)
+        {
+            this.authentication = new Authentication(x509Thumbprint);
+        }
+        else
+        {
+            this.authentication.setThumbprint(x509Thumbprint);
+        }
+    }
+
+    /**
+     * Getter for primary thumbprint part of the whole thumbprint
+     *
+     * @return The primary thumbprint string
+     */
+    public String getPrimaryThumbprint()
+    {
+        return getThumbprint().getPrimaryThumbprint();
+    }
+
+    /**
+     * Getter for secondary thumbprint part of the whole thumbprint
+     *
+     * @return The secondary thumbprint string
+     */
+    public String getSecondaryThumbprint()
+    {
+        return getThumbprint().getSecondaryThumbprint();
     }
 
     /**
@@ -331,5 +410,152 @@ public class Device
             throw new IllegalArgumentException();
         }
         this.forceUpdate = forceUpdate;
+    }
+
+    /*
+    * Specifies whether this device uses a key for authentication, an X509 certificate, or something else
+    */
+    @SerializedName("authentication")
+    private Authentication authentication;
+
+    /**
+     * Setter for Authentication
+     *
+     * @param authentication - the type of authentication the device uses
+     */
+    public void setAuthentication(Authentication authentication)
+    {
+        this.authentication = authentication;
+    }
+
+    /**
+     * Getter for Authentication
+     *
+     * @return the type of authentication that this device uses
+     */
+    public Authentication getAuthentication()
+    {
+        return this.authentication;
+    }
+
+    public AuthenticationType getAuthenticationType()
+    {
+        return this.authentication.getAuthenticationType();
+    }
+
+    public void setAuthenticationType(AuthenticationType type)
+    {
+        this.authentication.setAuthenticationType(type);
+    }
+
+    public static DeviceParser toDeviceParser(Device device)
+    {
+        DeviceParser deviceParser = new DeviceParser();
+        deviceParser.cloudToDeviceMessageCount = device.cloudToDeviceMessageCount;
+        deviceParser.connectionState = device.connectionState.toString();
+        deviceParser.connectionStateUpdatedTime = device.connectionStateUpdatedTime;
+        deviceParser.deviceId = device.deviceId;
+        deviceParser.eTag = device.eTag;
+        deviceParser.lastActivityTime = device.lastActivityTime;
+        deviceParser.generationId = device.generationId;
+        deviceParser.status = device.status.toString();
+        deviceParser.statusReason = device.statusReason;
+        deviceParser.statusUpdatedTime = device.statusUpdatedTime;
+
+        deviceParser.authenticationParser = new AuthenticationParser();
+        deviceParser.authenticationParser.type = AuthenticationTypeParser.valueOf(device.authentication.getAuthenticationType().toString());
+
+        if (device.authentication.getAuthenticationType() == AuthenticationType.certificateAuthority)
+        {
+            // do nothing else
+        }
+        else if (device.authentication.getAuthenticationType() == AuthenticationType.selfSigned)
+        {
+            deviceParser.authenticationParser.thumbprint = new X509ThumbprintParser(device.getPrimaryThumbprint(), device.getSecondaryThumbprint());
+        }
+        else if (device.authentication.getAuthenticationType() == AuthenticationType.sas)
+        {
+            deviceParser.authenticationParser.symmetricKey = new SymmetricKeyParser(device.getPrimaryKey(), device.getSecondaryKey());
+        }
+
+        return  deviceParser;
+    }
+
+    public static Device fromDeviceParser(DeviceParser deviceParser) throws IllegalArgumentException
+    {
+        if (deviceParser.authenticationParser == null || deviceParser.authenticationParser.type == null)
+        {
+            throw new IllegalArgumentException("deviceParser must have an authentication type assigned");
+        }
+
+        if (deviceParser.deviceId == null)
+        {
+            throw new IllegalArgumentException("deviceParser must have a deviceId assigned");
+        }
+
+        AuthenticationType authenticationType = AuthenticationType.valueOf(deviceParser.authenticationParser.type.toString());
+        Device device = new Device(deviceParser.deviceId, authenticationType);
+
+        device.cloudToDeviceMessageCount = deviceParser.cloudToDeviceMessageCount;
+        device.connectionStateUpdatedTime = deviceParser.connectionStateUpdatedTime;
+        device.deviceId = deviceParser.deviceId;
+        device.eTag = deviceParser.eTag;
+        device.lastActivityTime = deviceParser.lastActivityTime;
+        device.generationId = deviceParser.generationId;
+        device.statusReason = deviceParser.statusReason;
+        device.statusUpdatedTime = deviceParser.statusUpdatedTime;
+
+        if (deviceParser.status != null)
+        {
+            device.status = DeviceStatus.valueOf(deviceParser.status);
+        }
+
+        if (deviceParser.connectionState != null)
+        {
+            device.connectionState = DeviceConnectionState.valueOf(deviceParser.connectionState);
+        }
+
+        if (authenticationType == AuthenticationType.certificateAuthority)
+        {
+            //do nothing
+        }
+        else if (authenticationType == AuthenticationType.selfSigned)
+        {
+            if (deviceParser.authenticationParser.thumbprint != null && deviceParser.authenticationParser.thumbprint.primaryThumbprint != null && deviceParser.authenticationParser.thumbprint.secondaryThumbprint != null)
+            {
+                device.setThumbprint(new X509Thumbprint(deviceParser.authenticationParser.thumbprint.primaryThumbprint, deviceParser.authenticationParser.thumbprint.secondaryThumbprint));
+            }
+            else
+            {
+                device.setThumbprint(new X509Thumbprint());
+            }
+        }
+        else if (authenticationType == AuthenticationType.sas)
+        {
+            device.setSymmetricKey(new SymmetricKey());
+            if (deviceParser.authenticationParser.symmetricKey != null && deviceParser.authenticationParser.symmetricKey.primaryKey != null)
+            {
+                device.getSymmetricKey().setPrimaryKey(deviceParser.authenticationParser.symmetricKey.primaryKey);
+                device.getSymmetricKey().setSecondaryKey(deviceParser.authenticationParser.symmetricKey.secondaryKey);
+            }
+        }
+
+        return device;
+    }
+
+    /*
+     * Set default properties for a device
+     */
+    private void setPropertiesToDefaultValues()
+    {
+        this.generationId = "";
+        this.eTag = "";
+        this.statusReason = "";
+        this.statusUpdatedTime = utcTimeDefault;
+        this.connectionState = DeviceConnectionState.Disconnected;
+        this.connectionStateUpdatedTime = utcTimeDefault;
+        this.lastActivityTime = utcTimeDefault;
+        this.cloudToDeviceMessageCount = 0;
+        this.setForceUpdate(false);
     }
 }

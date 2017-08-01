@@ -6,6 +6,7 @@
 package com.microsoft.azure.sdk.iot.service;
 
 import com.google.gson.annotations.SerializedName;
+import com.microsoft.azure.sdk.iot.deps.serializer.JobPropertiesParser;
 
 import java.util.Date;
 
@@ -226,4 +227,71 @@ public class JobProperties {
 
     @SerializedName("failureReason")
     private String FailureReason;
+
+    public static JobProperties fromJobPropertiesParser(JobPropertiesParser parser)
+    {
+        //Codes_SRS_SERVICE_SDK_JAVA_JOB_PROPERTIES_15_001: [This method shall convert the provided parser into a JobProperty object and return it]
+        JobProperties jobProperties = new JobProperties();
+        jobProperties.EndTimeUtc = parser.EndTimeUtc;
+        jobProperties.ExcludeKeysInExport = parser.ExcludeKeysInExport;
+        jobProperties.FailureReason = parser.FailureReason;
+        jobProperties.InputBlobContainerUri = parser.InputBlobContainerUri;
+        jobProperties.OutputBlobContainerUri = parser.OutputBlobContainerUri;
+        jobProperties.JobId = parser.JobId;
+        jobProperties.Progress = parser.Progress;
+        jobProperties.StartTimeUtc = parser.StartTimeUtc;
+
+        if (parser.Status == null)
+        {
+            jobProperties.Status = null;
+        }
+        else
+        {
+            jobProperties.Status = JobStatus.valueOf(parser.Status.toUpperCase());
+        }
+
+        if (parser.Type == null)
+        {
+            jobProperties.Type = null;
+        }
+        else
+        {
+            jobProperties.Type = JobType.valueOf(parser.Type.toUpperCase());
+        }
+
+        return jobProperties;
+    }
+
+    public static JobPropertiesParser toJobPropertiesParser(JobProperties jobProperties)
+    {
+        //Codes_SRS_SERVICE_SDK_JAVA_JOB_PROPERTIES_34_002: [This method shall convert the provided jobProperties into a JobPropertiesParser object and return it]
+        JobPropertiesParser jobPropertiesParser = new JobPropertiesParser();
+        jobPropertiesParser.EndTimeUtc = jobProperties.EndTimeUtc;
+        jobPropertiesParser.ExcludeKeysInExport = jobProperties.ExcludeKeysInExport;
+        jobPropertiesParser.FailureReason = jobProperties.FailureReason;
+        jobPropertiesParser.InputBlobContainerUri = jobProperties.InputBlobContainerUri;
+        jobPropertiesParser.OutputBlobContainerUri = jobProperties.OutputBlobContainerUri;
+        jobPropertiesParser.JobId = jobProperties.JobId;
+        jobPropertiesParser.Progress = jobProperties.Progress;
+        jobPropertiesParser.StartTimeUtc = jobProperties.StartTimeUtc;
+        if (jobProperties.Status == null)
+        {
+            jobPropertiesParser.Status = null;
+        }
+        else
+        {
+            jobPropertiesParser.Status = jobProperties.Status.toString();
+        }
+
+        if (jobProperties.Type == null)
+        {
+            jobPropertiesParser.Type = null;
+        }
+        else
+        {
+            jobPropertiesParser.Type = jobProperties.Type.toString();
+        }
+
+        return jobPropertiesParser;
+    }
 }

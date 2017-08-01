@@ -5,10 +5,11 @@
 
 package com.microsoft.azure.sdk.iot.service;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import com.microsoft.azure.sdk.iot.deps.serializer.DeviceParser;
+import com.microsoft.azure.sdk.iot.deps.serializer.JobPropertiesParser;
+import com.microsoft.azure.sdk.iot.deps.serializer.RegistryStatisticsParser;
 import com.microsoft.azure.sdk.iot.service.auth.IotHubServiceSasToken;
 import com.microsoft.azure.sdk.iot.service.exceptions.IotHubException;
 import com.microsoft.azure.sdk.iot.service.exceptions.IotHubExceptionManager;
@@ -35,10 +36,6 @@ import java.util.concurrent.Executors;
  */
 public class RegistryManager
 {
-    public static final Gson gson = new GsonBuilder()
-            .registerTypeAdapter(Device.class, new DeviceDeserializer())
-            .registerTypeAdapter(Device.class, new DeviceSerializer())
-            .create();
     private final Integer DEFAULT_HTTP_TIMEOUT_MS = 24000;
     private final ExecutorService executor = Executors.newFixedThreadPool(10);
     private IotHubConnectionString iotHubConnectionString;
@@ -94,7 +91,7 @@ public class RegistryManager
         }
 
         // Codes_SRS_SERVICE_SDK_JAVA_REGISTRYMANAGER_12_005: [The function shall deserialize the given device object to Json string]
-        String deviceJson = gson.toJson(device);
+        String deviceJson = DeviceParser.toJson(Device.toDeviceParser(device));
 
         // Codes_SRS_SERVICE_SDK_JAVA_REGISTRYMANAGER_12_006: [The function shall get the URL for the device]
         URL url = iotHubConnectionString.getUrlDevice(device.getDeviceId());
@@ -113,7 +110,7 @@ public class RegistryManager
         // Codes_SRS_SERVICE_SDK_JAVA_REGISTRYMANAGER_12_011: [The function shall create a new Device object from the response and return with it]
         String bodyStr = new String(response.getBody(), StandardCharsets.UTF_8);
 
-        Device iotHubDevice = gson.fromJson(bodyStr, Device.class);
+        Device iotHubDevice = Device.fromDeviceParser(DeviceParser.fromJson(bodyStr));
 
         return iotHubDevice;
     }
@@ -183,7 +180,7 @@ public class RegistryManager
 
         // Codes_SRS_SERVICE_SDK_JAVA_REGISTRYMANAGER_12_020: [The function shall create a new Device object from the response and return with it]
         String bodyStr = new String(response.getBody(), StandardCharsets.UTF_8);
-        Device iotHubDevice = gson.fromJson(bodyStr, Device.class);
+        Device iotHubDevice = Device.fromDeviceParser(DeviceParser.fromJson(bodyStr));
         return iotHubDevice;
     }
 
@@ -260,7 +257,7 @@ public class RegistryManager
             for (int i = 0; i < deviceArray.size(); i++)
             {
                 JsonObject jsonObject = deviceArray.getJsonObject(i);
-                Device iotHubDevice = gson.fromJson(jsonObject.toString(), Device.class);
+                Device iotHubDevice = Device.fromDeviceParser(DeviceParser.fromJson(jsonObject.toString()));
                 deviceList.add(iotHubDevice);
             }
             return deviceList;
@@ -373,7 +370,7 @@ public class RegistryManager
         String sasTokenString = new IotHubServiceSasToken(this.iotHubConnectionString).toString();
 
         // Codes_SRS_SERVICE_SDK_JAVA_REGISTRYMANAGER_12_038: [The function shall create a new HttpRequest for updating the device on IotHub]
-        HttpRequest request = CreateRequest(url, HttpMethod.PUT, gson.toJson(device).getBytes(), sasTokenString);
+        HttpRequest request = CreateRequest(url, HttpMethod.PUT, DeviceParser.toJson(Device.toDeviceParser(device)).getBytes(), sasTokenString);
         request.setHeaderField("If-Match", "*");
 
         // Codes_SRS_SERVICE_SDK_JAVA_REGISTRYMANAGER_12_039: [The function shall send the created request and get the response]
@@ -384,7 +381,7 @@ public class RegistryManager
 
         // Codes_SRS_SERVICE_SDK_JAVA_REGISTRYMANAGER_12_041: [The function shall create a new Device object from the response and return with it]
         String bodyStr = new String(response.getBody(), StandardCharsets.UTF_8);
-        Device iotHubDevice = gson.fromJson(bodyStr, Device.class);
+        Device iotHubDevice = Device.fromDeviceParser(DeviceParser.fromJson(bodyStr));
         return iotHubDevice;
     }
 
@@ -546,7 +543,7 @@ public class RegistryManager
 
         // Codes_SRS_SERVICE_SDK_JAVA_REGISTRYMANAGER_12_059: [The function shall create a new RegistryStatistics object from the response and return with it]
         String bodyStr = new String(response.getBody(), StandardCharsets.UTF_8);
-        RegistryStatistics registryStatistics = gson.fromJson(bodyStr, RegistryStatistics.class);
+        RegistryStatistics registryStatistics = RegistryStatistics.fromRegistryStatisticsParser(RegistryStatisticsParser.fromJson(bodyStr));
         return registryStatistics;
     }
 
@@ -787,8 +784,7 @@ public class RegistryManager
         jobProperties.setType(JobProperties.JobType.EXPORT);
         jobProperties.setOutputBlobContainerUri(exportBlobContainerUri);
         jobProperties.setExcludeKeysInExport(excludeKeysInExport);
-        Type type = new TypeToken<JobProperties>() {}.getType();
-        return gson.toJson(jobProperties, type);
+        return JobPropertiesParser.toJson(JobProperties.toJobPropertiesParser(jobProperties));
     }
 
     private String CreateImportJobPropertiesJson(String importBlobContainerUri, String outputBlobContainerUri)
@@ -797,14 +793,13 @@ public class RegistryManager
         jobProperties.setType(JobProperties.JobType.IMPORT);
         jobProperties.setInputBlobContainerUri(importBlobContainerUri);
         jobProperties.setOutputBlobContainerUri(outputBlobContainerUri);
-        Type type = new TypeToken<JobProperties>() {}.getType();
-        return gson.toJson(jobProperties, type);
+        return JobPropertiesParser.toJson(JobProperties.toJobPropertiesParser(jobProperties));
     }
 
     private JobProperties ProcessJobResponse(HttpResponse response) throws IotHubException, JsonSyntaxException {
         IotHubExceptionManager.httpResponseVerification(response);
         String bodyStr = new String(response.getBody(), StandardCharsets.UTF_8);
-        JobProperties resultJobProperties = gson.fromJson(bodyStr, JobProperties.class);
+        JobProperties resultJobProperties = JobProperties.fromJobPropertiesParser(JobPropertiesParser.fromJson(bodyStr));
         return resultJobProperties;
     }
 

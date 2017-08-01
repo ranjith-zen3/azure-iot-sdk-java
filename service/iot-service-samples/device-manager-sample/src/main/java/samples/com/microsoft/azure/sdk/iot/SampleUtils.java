@@ -18,10 +18,16 @@ import java.util.EnumSet;
 
 public class SampleUtils
 {
-    public static final String iotHubConnectionString = "[sample iot hub connection string goes here]";
-    public static final String storageConnectionString = "[sample storage connection string goes here]";
-    public static final String deviceId = "[Device name goes here]";
+    public static final String iotHubConnectionString = "[IoT hub connection string goes here]";
+    public static final String storageConnectionString = "[Sample storage connection string goes here]";
+    public static final String deviceId = "[Device Id goes here]";
     public static final String exportFileLocation = "[Insert local folder here - something like C:\\foldername\\]";
+
+    //Thumbprints need to be 40 characters long
+    public static final String primaryThumbprint = "0000000000000000000000000000000000000000";
+    public static final String secondaryThumbprint = "0000000000000000000000000000000000000000";
+    public static final String updatedPrimaryThumbprint = "1111111111111111111111111111111111111111";
+    public static final String updatedSecondaryThumbprint = "1111111111111111111111111111111111111111";
 
     public static String getContainerSasUri(CloudBlobContainer container) throws InvalidKeyException, StorageException
     {

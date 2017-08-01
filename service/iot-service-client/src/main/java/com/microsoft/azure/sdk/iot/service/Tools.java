@@ -249,4 +249,27 @@ public class Tools
             }
         }
     }
+
+    /**
+     * Equality check for objects that accounts for null value comparisons
+     * @param a the first string
+     * @param b the seconds string
+     * @return if the two are equal
+     */
+    public static boolean areEqual(Object a, Object b)
+    {
+        if (a == null && b == null)
+        {
+            //both are null
+            return true;
+        }
+        else if (a == null || b == null)
+        {
+            //one is null, the other is not
+            return false;
+        }
+
+        //neither is null, so this comparison won't throw
+        return a.equals(b);
+    }
 }

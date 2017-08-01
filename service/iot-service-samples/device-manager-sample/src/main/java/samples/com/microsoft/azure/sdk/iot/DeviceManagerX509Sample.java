@@ -5,26 +5,36 @@
 
 package samples.com.microsoft.azure.sdk.iot;
 
+import com.microsoft.azure.sdk.iot.service.AuthenticationType;
 import com.microsoft.azure.sdk.iot.service.Device;
+import com.microsoft.azure.sdk.iot.service.DeviceStatus;
 import com.microsoft.azure.sdk.iot.service.RegistryManager;
+import com.microsoft.azure.sdk.iot.service.auth.X509Thumbprint;
 import com.microsoft.azure.sdk.iot.service.exceptions.IotHubException;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 /** Manages device on IotHub - CRUD operations */
-public class DeviceManagerSample
+public class DeviceManagerX509Sample
 {
+    //x509 authenticated devices are either self signed or certificate authority signed. Use this boolean to choose which kind to use in this sample
+    static boolean isSelfSigned = false;
+
     /**
-     * A simple sample for doing CRUD operations
+     * A simple sample for doing CRUD operations involving X509 authenticated devices
      * @param args
      * @throws IOException
      * @throws URISyntaxException
      */
     public static void main(String[] args) throws Exception
     {
+        //Uncomment the next line to use Self Signed authentication instead of certificate authority signed
+        //isSelfSigned = true;
+
+        //Connection strings and thumbprints will need to be set in SampleUtils.java file
         System.out.println("Starting sample...");
-        
+
         System.out.println("Add Device started");
         AddDevice();
         System.out.println("Add Device finished");
@@ -32,29 +42,44 @@ public class DeviceManagerSample
         System.out.println("Get Device started");
         GetDevice();
         System.out.println("Get Device finished");
-        
+
         System.out.println("Update Device started");
         UpdateDevice();
         System.out.println("Update Device finished");
-        
+
         System.out.println("Remove Device started");
         RemoveDevice();
         System.out.println("Remove Device finished");
-        
+
         System.out.println("Shutting down sample...");
     }
-    
+
     private static void AddDevice() throws Exception
     {
         RegistryManager registryManager = RegistryManager.createFromConnectionString(SampleUtils.iotHubConnectionString);
-        
-        Device device = Device.createFromId(SampleUtils.deviceId, null, null);
+
+        Device device = null;
+
+        if (isSelfSigned)
+        {
+            device = Device.createDevice(SampleUtils.deviceId, AuthenticationType.selfSigned);
+            device.setThumbprint(new X509Thumbprint(SampleUtils.primaryThumbprint, SampleUtils.secondaryThumbprint));
+        }
+        else
+        {
+            device = Device.createDevice(SampleUtils.deviceId, AuthenticationType.certificateAuthority);
+        }
+
         try
         {
             device = registryManager.addDevice(device);
 
             System.out.println("Device created: " + device.getDeviceId());
-            System.out.println("Device key: " + device.getPrimaryKey());
+            if (isSelfSigned)
+            {
+                System.out.println("Device primary thumbprint: " + device.getPrimaryThumbprint());
+                System.out.println("Device secondary thumbprint: " + device.getSecondaryThumbprint());
+            }
         }
         catch (IotHubException iote)
         {
@@ -65,20 +90,24 @@ public class DeviceManagerSample
             e.printStackTrace();
         }
     }
-    
+
     private static void GetDevice() throws Exception
     {
         RegistryManager registryManager = RegistryManager.createFromConnectionString(SampleUtils.iotHubConnectionString);
-        
+
         Device returnDevice = null;
         try
         {
             returnDevice = registryManager.getDevice(SampleUtils.deviceId);
 
             System.out.println("Device: " + returnDevice.getDeviceId());
-            System.out.println("Device primary key: " + returnDevice.getPrimaryKey());
-            System.out.println("Device secondary key: " + returnDevice.getSecondaryKey());
             System.out.println("Device eTag: " + returnDevice.geteTag());
+
+            if (isSelfSigned)
+            {
+                System.out.println("Device primary thumbprint: " + returnDevice.getPrimaryThumbprint());
+                System.out.println("Device secondary thumbprint: " + returnDevice.getSecondaryThumbprint());
+            }
         }
         catch (IotHubException iote)
         {
@@ -89,24 +118,33 @@ public class DeviceManagerSample
             e.printStackTrace();
         }
     }
-    
+
     private static void UpdateDevice() throws Exception
     {
-        String primaryKey = "[New primary key goes here]";
-        String secondaryKey = "[New secondary key goes here]";
-
         RegistryManager registryManager = RegistryManager.createFromConnectionString(SampleUtils.iotHubConnectionString);
-        
-        Device device = Device.createFromId(SampleUtils.deviceId, null, null);
-        device.getSymmetricKey().setPrimaryKey(primaryKey);
-        device.getSymmetricKey().setSecondaryKey(secondaryKey);
+
+        Device device = null;
+        if (isSelfSigned)
+        {
+            device = Device.createDevice(SampleUtils.deviceId, AuthenticationType.selfSigned);
+            device.setThumbprint(new X509Thumbprint(SampleUtils.updatedPrimaryThumbprint, SampleUtils.updatedSecondaryThumbprint));
+        }
+        else
+        {
+            device = Device.createDevice(SampleUtils.deviceId, AuthenticationType.certificateAuthority);
+        }
+
         try
         {
             device = registryManager.updateDevice(device);
 
             System.out.println("Device updated: " + device.getDeviceId());
-            System.out.println("Device primary key: " + device.getPrimaryKey());
-            System.out.println("Device secondary key: " + device.getSecondaryKey());
+
+            if (isSelfSigned)
+            {
+                System.out.println("Device primary thumbprint: " + device.getPrimaryThumbprint());
+                System.out.println("Device secondary thumbprint: " + device.getSecondaryThumbprint());
+            }
         }
         catch (IotHubException iote)
         {
@@ -117,14 +155,15 @@ public class DeviceManagerSample
             e.printStackTrace();
         }
     }
-    
+
     private static void RemoveDevice() throws Exception
     {
         RegistryManager registryManager = RegistryManager.createFromConnectionString(SampleUtils.iotHubConnectionString);
-        
+
         try
         {
             registryManager.removeDevice(SampleUtils.deviceId);
+
             System.out.println("Device removed: " + SampleUtils.deviceId);
         }
         catch (IotHubException iote)

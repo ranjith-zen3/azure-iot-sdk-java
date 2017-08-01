@@ -18,12 +18,12 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for Iot Hub Connection String class.
- * 64% methods, 94% lines covered
+ * 100% methods, 100% lines covered
  */
 @RunWith(JMockit.class)
 public class IotHubConnectionStringTest
 {
-    private static final String URL_API_VERSION = "api-version=2016-02-03";
+    private static final String URL_API_VERSION = "api-version=2017-06-30";
 
     // Tests_SRS_SERVICE_SDK_JAVA_IOTHUBCONNECTIONSTRING_12_001: [The function shall serialize the object properties to a string using the following format: SharedAccessKeyName@sas.root.IotHubName]
     @Test
@@ -97,7 +97,7 @@ public class IotHubConnectionStringTest
         final String sharedAccessKey = "1234567890abcdefghijklmnopqrstvwxyz=";
         final String connectionString = "HostName=" + hostName + ";SharedAccessKeyName=" + sharedAccessKeyName + ";" + policyName + "=" + sharedAccessKey;
         final IotHubConnectionString iotHubConnectionString = IotHubConnectionStringBuilder.createConnectionString(connectionString);
-        final String expected = "https://HOSTNAME.b.c.d/devices/xxx-device?api-version=2016-11-14";
+        final String expected = "https://HOSTNAME.b.c.d/devices/xxx-device?"+URL_API_VERSION;
         
         // act
         String actual = iotHubConnectionString.getUrlDevice(deviceId).toString();
@@ -157,7 +157,7 @@ public class IotHubConnectionStringTest
         final String sharedAccessKey = "1234567890abcdefghijklmnopqrstvwxyz=";
         final String connectionString = "HostName=" + hostName + ";SharedAccessKeyName=" + sharedAccessKeyName + ";" + policyName + "=" + sharedAccessKey;
         final IotHubConnectionString iotHubConnectionString = IotHubConnectionStringBuilder.createConnectionString(connectionString);
-        final String expected = "https://HOSTNAME.b.c.d/devices/?top=10&api-version=2016-11-14";
+        final String expected = "https://HOSTNAME.b.c.d/devices/?top=10&" + URL_API_VERSION;
         
         // act
         String actual = iotHubConnectionString.getUrlDeviceList(maxCount).toString();
@@ -178,7 +178,7 @@ public class IotHubConnectionStringTest
         final String sharedAccessKey = "1234567890abcdefghijklmnopqrstvwxyz=";
         final String connectionString = "HostName=" + hostName + ";SharedAccessKeyName=" + sharedAccessKeyName + ";" + policyName + "=" + sharedAccessKey;
         final IotHubConnectionString iotHubConnectionString = IotHubConnectionStringBuilder.createConnectionString(connectionString);
-        final String expected = "https://HOSTNAME.b.c.d/statistics/devices?api-version=2016-11-14";
+        final String expected = "https://HOSTNAME.b.c.d/statistics/devices?" + URL_API_VERSION;
         
         // act
         String actual = iotHubConnectionString.getUrlDeviceStatistics().toString();
@@ -223,7 +223,7 @@ public class IotHubConnectionStringTest
         final String connectionString = "HostName=" + hostName + ";SharedAccessKeyName=" + sharedAccessKeyName + ";" + policyName + "=" + sharedAccessKey;
         final String deviceId = "testDevice";
         final IotHubConnectionString iotHubConnectionString = IotHubConnectionStringBuilder.createConnectionString(connectionString);
-        final String expected = "https://HOSTNAME.b.c.d/twins/testDevice?api-version=2016-11-14";
+        final String expected = "https://HOSTNAME.b.c.d/twins/testDevice?" + URL_API_VERSION;
 
         // act
         String actual = iotHubConnectionString.getUrlTwin(deviceId).toString();
@@ -287,7 +287,7 @@ public class IotHubConnectionStringTest
         final String connectionString = "HostName=" + hostName + ";SharedAccessKeyName=" + sharedAccessKeyName + ";" + policyName + "=" + sharedAccessKey;
         final String deviceId = "testDevice";
         final IotHubConnectionString iotHubConnectionString = IotHubConnectionStringBuilder.createConnectionString(connectionString);
-        final String expected = "https://HOSTNAME.b.c.d/twins/testDevice/tags?api-version=2016-11-14";
+        final String expected = "https://HOSTNAME.b.c.d/twins/testDevice/tags?" + URL_API_VERSION;
 
         // act
         String actual = iotHubConnectionString.getUrlTwinTags(deviceId).toString();
@@ -351,14 +351,13 @@ public class IotHubConnectionStringTest
         final String connectionString = "HostName=" + hostName + ";SharedAccessKeyName=" + sharedAccessKeyName + ";" + policyName + "=" + sharedAccessKey;
         final String deviceId = "testDevice";
         final IotHubConnectionString iotHubConnectionString = IotHubConnectionStringBuilder.createConnectionString(connectionString);
-        final String expected = "https://HOSTNAME.b.c.d/twins/testDevice/properties/desired?api-version=2016-11-14";
+        final String expected = "https://HOSTNAME.b.c.d/twins/testDevice/properties/desired?" + URL_API_VERSION;
 
         // act
         String actual = iotHubConnectionString.getUrlTwinDesired(deviceId).toString();
 
         // assert
         assertTrue(actual.equals(expected));
-
     }
 
     /*
@@ -413,7 +412,7 @@ public class IotHubConnectionStringTest
         final String connectionString = "HostName=" + hostName + ";SharedAccessKeyName=" + sharedAccessKeyName + ";" + policyName + "=" + sharedAccessKey;
         final String deviceId = "testDevice";
         final IotHubConnectionString iotHubConnectionString = IotHubConnectionStringBuilder.createConnectionString(connectionString);
-        final String expected = "https://HOSTNAME.b.c.d/twins/testDevice/methods?api-version=2016-11-14";
+        final String expected = "https://HOSTNAME.b.c.d/twins/testDevice/methods?" + URL_API_VERSION;
 
         // act
         String actual = iotHubConnectionString.getUrlMethod(deviceId).toString();
@@ -475,7 +474,7 @@ public class IotHubConnectionStringTest
         final String connectionString = "HostName=" + hostName + ";SharedAccessKeyName=" + sharedAccessKeyName + ";" + policyName + "=" + sharedAccessKey;
         final String jobId = "testJobId";
         final IotHubConnectionString iotHubConnectionString = IotHubConnectionStringBuilder.createConnectionString(connectionString);
-        final String expected = "https://HOSTNAME.b.c.d/jobs/v2/testJobId?api-version=2016-11-14";
+        final String expected = "https://HOSTNAME.b.c.d/jobs/v2/testJobId?" + URL_API_VERSION;
 
         // act
         String actual = iotHubConnectionString.getUrlJobs(jobId).toString();
@@ -536,7 +535,7 @@ public class IotHubConnectionStringTest
         final String connectionString = "HostName=" + hostName + ";SharedAccessKeyName=" + sharedAccessKeyName + ";" + policyName + "=" + sharedAccessKey;
         final String jobId = "testJobId";
         final IotHubConnectionString iotHubConnectionString = IotHubConnectionStringBuilder.createConnectionString(connectionString);
-        final String expected = "https://HOSTNAME.b.c.d/jobs/v2/testJobId/cancel?api-version=2016-11-14";
+        final String expected = "https://HOSTNAME.b.c.d/jobs/v2/testJobId/cancel?" + URL_API_VERSION;
 
         // act
         String actual = iotHubConnectionString.getUrlJobsCancel(jobId).toString();
@@ -596,7 +595,7 @@ public class IotHubConnectionStringTest
         final String sharedAccessKey = "1234567890abcdefghijklmnopqrstvwxyz=";
         final String connectionString = "HostName=" + hostName + ";SharedAccessKeyName=" + sharedAccessKeyName + ";" + policyName + "=" + sharedAccessKey;
         final IotHubConnectionString iotHubConnectionString = IotHubConnectionStringBuilder.createConnectionString(connectionString);
-        final String expected = "https://HOSTNAME.b.c.d/jobs/v2/query?api-version=2016-11-14";
+        final String expected = "https://HOSTNAME.b.c.d/jobs/v2/query?" + URL_API_VERSION;
 
         // act
         String actual = iotHubConnectionString.getUrlQuery().toString();
@@ -617,7 +616,7 @@ public class IotHubConnectionStringTest
         final String sharedAccessKey = "1234567890abcdefghijklmnopqrstvwxyz=";
         final String connectionString = "HostName=" + hostName + ";SharedAccessKeyName=" + sharedAccessKeyName + ";" + policyName + "=" + sharedAccessKey;
         final IotHubConnectionString iotHubConnectionString = IotHubConnectionStringBuilder.createConnectionString(connectionString);
-        final String expected = "https://HOSTNAME.b.c.d/devices/query?api-version=2016-11-14";
+        final String expected = "https://HOSTNAME.b.c.d/devices/query?" + URL_API_VERSION;
 
         // act
         String actual = iotHubConnectionString.getUrlTwinQuery().toString();
@@ -640,7 +639,7 @@ public class IotHubConnectionStringTest
         final String sharedAccessKey = "1234567890abcdefghijklmnopqrstvwxyz=";
         final String connectionString = "HostName=" + hostName + ";SharedAccessKeyName=" + sharedAccessKeyName + ";" + policyName + "=" + sharedAccessKey;
         final IotHubConnectionString iotHubConnectionString = IotHubConnectionStringBuilder.createConnectionString(connectionString);
-        final String expected = "https://HOSTNAME.b.c.d/jobs/create?api-version=2016-11-14";
+        final String expected = "https://HOSTNAME.b.c.d/jobs/create?" + URL_API_VERSION;
 
         // act
         String actual = iotHubConnectionString.getUrlCreateExportImportJob().toString();
@@ -664,7 +663,7 @@ public class IotHubConnectionStringTest
         final String connectionString = "HostName=" + hostName + ";SharedAccessKeyName=" + sharedAccessKeyName + ";" + policyName + "=" + sharedAccessKey;
         final IotHubConnectionString iotHubConnectionString = IotHubConnectionStringBuilder.createConnectionString(connectionString);
         final String jobId = "testJobId";
-        final String expected = "https://HOSTNAME.b.c.d/jobs/testJobId?api-version=2016-11-14";
+        final String expected = "https://HOSTNAME.b.c.d/jobs/testJobId?" + URL_API_VERSION;
 
         // act
         String actual = iotHubConnectionString.getUrlImportExportJob(jobId).toString();
