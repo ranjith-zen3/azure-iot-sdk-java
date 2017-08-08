@@ -65,6 +65,8 @@ public void open() throws IOException
 
 **SRS_AMQPSIOTHUBCONNECTION_15_011: [**If any exception is thrown while attempting to trigger the reactor, the function shall close the connection and throw an IOException.**]**
 
+**SRS_AMQPSIOTHUBCONNECTION_21_051: [**If the reactor do not complete the open action in 1 minute, the function shall close the connection and throw an IOException.**]**
+
 
 ### close
 

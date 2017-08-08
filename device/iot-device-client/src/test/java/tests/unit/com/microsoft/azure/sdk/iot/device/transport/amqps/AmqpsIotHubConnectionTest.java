@@ -59,9 +59,6 @@ public class AmqpsIotHubConnectionTest {
     protected Proton mockProton;
 
     @Mocked
-    protected IotHubReactor mockIotHubReactor;
-
-    @Mocked
     protected Reactor mockReactor;
 
     @Mocked
@@ -391,8 +388,26 @@ public class AmqpsIotHubConnectionTest {
     public void openCreatesSasToken() throws IOException, InterruptedException
     {
         baseExpectations();
+        new NonStrictExpectations()
+        {
+            {
+                mockEvent.getLink();
+                result = mockSender;
+                mockSender.getName();
+                result = "sender";
+            }
+        };
 
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, false);
+        final AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, false);
+
+        new MockUp<IotHubReactor>()
+        {
+            @Mock
+            public void run() throws HandlerException
+            {
+                connection.onLinkRemoteOpen(mockEvent);
+            }
+        };
 
         connection.open();
 
@@ -414,16 +429,26 @@ public class AmqpsIotHubConnectionTest {
         new NonStrictExpectations()
         {
             {
-                new IotHubReactor((Reactor) any);
-                result = mockIotHubReactor;
-                mockIotHubReactor.run();
+                mockEvent.getLink();
+                result = mockSender;
+                mockSender.getName();
+                result = "sender";
 
                 mockOpenLock.waitLock(anyLong);
             }
         };
 
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, false);
+        final AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, false);
         Deencapsulation.setField(connection, "openLock", mockOpenLock);
+
+        new MockUp<IotHubReactor>()
+        {
+            @Mock
+            public void run() throws HandlerException
+            {
+                connection.onLinkRemoteOpen(mockEvent);
+            }
+        };
 
         connection.open();
 
@@ -446,6 +471,59 @@ public class AmqpsIotHubConnectionTest {
     public void openWaitsForReactorToBeReadyAndForEnoughLinkCreditToBeAvailable() throws IOException, InterruptedException
     {
         baseExpectations();
+
+        new NonStrictExpectations()
+        {
+            {
+                mockEvent.getLink();
+                result = mockSender;
+                mockSender.getName();
+                result = "sender";
+                mockOpenLock.waitLock(anyLong);
+            }
+        };
+
+        final AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, false);
+        Deencapsulation.setField(connection, "openLock", mockOpenLock);
+
+        new MockUp<IotHubReactor>()
+        {
+            @Mock
+            public void run() throws HandlerException
+            {
+                connection.onLinkRemoteOpen(mockEvent);
+            }
+        };
+
+        connection.open();
+
+        new Verifications()
+        {
+            {
+                mockOpenLock.waitLock(anyLong);
+                times = 1;
+            }
+        };
+    }
+
+    // Codes_SRS_AMQPSIOTHUBCONNECTION_21_051: [If the reactor do not complete the open action in 1
+    // minute, the function shall close the connection and throw an IOException.]
+    @Test (expected = IOException.class)
+    public void openWaitsForReactorTimeout(
+            @Mocked
+            final IotHubReactor mockedIotHubReactor
+    ) throws IOException, InterruptedException
+    {
+        baseExpectations();
+
+        new MockUp<Thread>()
+        {
+            @Mock
+            void sleep(long millis) throws InterruptedException
+            {
+                // don't do anything, it will help us to reduce the timeout time.
+            }
+        };
 
         new NonStrictExpectations()
         {

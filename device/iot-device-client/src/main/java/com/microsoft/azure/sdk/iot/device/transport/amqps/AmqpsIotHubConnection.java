@@ -46,7 +46,8 @@ import java.util.concurrent.TimeUnit;
  */
 public final class AmqpsIotHubConnection extends BaseHandler
 {
-    private static final int MAX_WAIT_TO_OPEN_CLOSE_CONNECTION = 1*60*1000; // 1 second timeout
+    private static final int MAX_WAIT_TO_OPEN_CLOSE_CONNECTION = 1*60*1000; // 1 minute timeout
+    private static final int OPEN_CLOSE_RETRY_INTERVAL_IN_MILLISECONDS = 100;
     private static final int MAX_WAIT_TO_TERMINATE_EXECUTOR = 30;
     private State state;
 
@@ -207,10 +208,36 @@ public final class AmqpsIotHubConnection extends BaseHandler
                 {
                     openLock.waitLock(MAX_WAIT_TO_OPEN_CLOSE_CONNECTION);
                 }
-            } catch (InterruptedException e)
+            }
+            catch (InterruptedException e)
             {
+                this.close();
                 logger.LogError(e);
                 throw new IOException("Waited too long for the connection to open.");
+            }
+
+            int timeout = MAX_WAIT_TO_OPEN_CLOSE_CONNECTION;
+            while(this.state != State.OPEN)
+            {
+                try
+                {
+                    Thread.sleep(OPEN_CLOSE_RETRY_INTERVAL_IN_MILLISECONDS);
+                }
+                catch (InterruptedException e)
+                {
+                    this.close();
+                    logger.LogError(e);
+                    throw new IOException("Failed Waiting for the connection to open.");
+                }
+                timeout -= OPEN_CLOSE_RETRY_INTERVAL_IN_MILLISECONDS;
+                if(timeout <= 0)
+                {
+                    // Codes_SRS_AMQPSIOTHUBCONNECTION_21_051: [If the reactor do not complete the open action in 1
+                    // minute, the function shall close the connection and throw an IOException.]
+                    this.close();
+                    logger.LogError("Failed Waiting for the connection to open. Proton never call onLinkRemoteOpen.");
+                    throw new IOException("Failed Waiting for the connection to open. Proton never call onLinkRemoteOpen.");
+                }
             }
         }
     }
