@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.sdk.iot.service.auth;
 
-import com.google.gson.annotations.SerializedName;
 import com.microsoft.azure.sdk.iot.service.Tools;
 
 import javax.crypto.KeyGenerator;
@@ -23,10 +22,7 @@ public class SymmetricKey
     private transient final String DeviceKeyLengthInvalid = "DeviceKeyLengthInvalid";
     private final String encryptionMethod = "AES";
 
-    @SerializedName("primaryKey")
     private String primaryKey;
-
-    @SerializedName("secondaryKey")
     private String secondaryKey;
 
     /**
@@ -110,13 +106,13 @@ public class SymmetricKey
     }
 
     @Override
-    public boolean equals(Object o)
+    public boolean equals(Object other)
     {
-        if (o instanceof SymmetricKey)
+        if (other instanceof SymmetricKey)
         {
-            SymmetricKey obj = (SymmetricKey) o;
-            return (Tools.areEqual(this.getPrimaryKey(), obj.getPrimaryKey())
-                    && Tools.areEqual(this.getSecondaryKey(), obj.getSecondaryKey()));
+            SymmetricKey otherSymmetricKey = (SymmetricKey) other;
+            return (Tools.areEqual(this.getPrimaryKey(), otherSymmetricKey.getPrimaryKey())
+                    && Tools.areEqual(this.getSecondaryKey(), otherSymmetricKey.getSecondaryKey()));
         }
 
         return false;

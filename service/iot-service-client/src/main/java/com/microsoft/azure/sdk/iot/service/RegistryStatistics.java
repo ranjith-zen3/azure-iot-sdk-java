@@ -35,14 +35,30 @@ public class RegistryStatistics
         return totalDeviceCount;
     }
 
-    public static RegistryStatistics fromRegistryStatisticsParser(RegistryStatisticsParser registryStatisticsParser)
+    /**
+     * Consructs a RegistryStatisics object based off of a RegistryStatisticsParser object
+     * @param registryStatisticsParser the object to base the constructed object on
+     */
+    public RegistryStatistics(RegistryStatisticsParser registryStatisticsParser)
     {
-        //Codes_SRS_SERVICE_SDK_JAVA_REGISTRY_STATISTICS_34_001: [This method shall convert the provided parser into a RegistryStatistics object and return it]
-        RegistryStatistics registryStatistics = new RegistryStatistics();
-        registryStatistics.totalDeviceCount = registryStatisticsParser.totalDeviceCount;
-        registryStatistics.enabledDeviceCount = registryStatisticsParser.enabledDeviceCount;
-        registryStatistics.disabledDeviceCount = registryStatisticsParser.disabledDeviceCount;
+        //Codes_SRS_SERVICE_SDK_JAVA_REGISTRY_STATISTICS_34_001: [This method shall convert the provided parser into a RegistryStatistics object and return it.]
+        this.totalDeviceCount = registryStatisticsParser.getTotalDeviceCount();
+        this.enabledDeviceCount = registryStatisticsParser.getEnabledDeviceCount();
+        this.disabledDeviceCount = registryStatisticsParser.getDisabledDeviceCount();
+    }
 
-        return registryStatistics;
+    /**
+     * Converts this into a RegistryStatisticsParser object that can be used for serialization and deserialization
+     * @return the created RegistryStatisticsParser object
+     */
+    public RegistryStatisticsParser toRegistryStatisticsParser()
+    {
+        //Codes_SRS_SERVICE_SDK_JAVA_REGISTRY_STATISTICS_34_002: [This method shall convert this into a RegistryStatisticsParser object and return it.]
+        RegistryStatisticsParser parser = new RegistryStatisticsParser();
+        parser.setTotalDeviceCount(this.totalDeviceCount);
+        parser.setEnabledDeviceCount(this.enabledDeviceCount);
+        parser.setDisabledDeviceCount(this.disabledDeviceCount);
+
+        return parser;
     }
 }

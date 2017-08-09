@@ -22,11 +22,18 @@ public class X509Thumbprint
 ```
 
 ### X509Thumbprint
+
+```java
+public X509Thumbprint();
+```
+**SRS_X509THUMBPRINT_34_011: [**This constructor shall generate a random primary and secondary thumbprint.**]**
+
+
 ```java
 public X509Thumbprint(String primaryThumbprint, String secondaryThumbprint);
 ```
-**SRS_X509THUMBPRINT_34_006: [**This constructor will create an X509Thumbprint with the provided primary thumbprint and the provided secondary thumbprint.**]**
-**SRS_X509THUMBPRINT_34_010: [**This constructor will throw an IllegalArgumentException if the provided thumbprints are not a valid format.**]**
+**SRS_X509THUMBPRINT_34_006: [**This constructor shall create an X509Thumbprint with the provided primary thumbprint and the provided secondary thumbprint.**]**
+**SRS_X509THUMBPRINT_34_010: [**This constructor shall throw an IllegalArgumentException if the provided thumbprints are null, empty, or not a valid format.**]**
 
 
 ### getPrimaryThumbprint
@@ -51,7 +58,7 @@ public String getSecondaryThumbprint();
 public void setPrimaryThumbprint(String primaryThumbprint);
 ```
 **SRS_X509THUMBPRINT_34_003: [**The function shall set the primary thumbprint to the given value.**]**
-**SRS_X509THUMBPRINT_34_007: [**If the provided thumbprint string is not the proper format, an IllegalArgumentException shall be thrown.**]**
+**SRS_X509THUMBPRINT_34_007: [**If the provided thumbprint string is null, empty, or not the proper format, an IllegalArgumentException shall be thrown.**]**
 
 
 ### setSecondaryThumbprint

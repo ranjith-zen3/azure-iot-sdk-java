@@ -413,7 +413,7 @@ public String updateTwin(Map<String, Object> desiredPropertyMap,
 **SRS_TWINPARSER_21_081: [**If any `key` already exists, the updateTwin shall replace the existed value by the new one.**]**  
 **SRS_TWINPARSER_21_082: [**If any `value` is null, the updateTwin shall delete it from the collection and report on Json.**]**  
 **SRS_TWINPARSER_21_075: [**If Tags is not enable and `tagsMap` is not null, the updateTwin shall throw IOException.**]**  
-**SRS_TWINPARSER_21_076: [**If `deviceId`, `generationId`, `etag`, `status`, `statusReason`, `statusUpdatedTime`, `connectionState`, `connectionStateUpdatedTime`, `lastActivityTime`, and `lastAcceptingIpFilterRule` are not null, the updateTwin shall include its value in the json.**]**  
+**SRS_TWINPARSER_21_076: [**If `deviceId`, `generationId`, `etag`, `status`, `statusReason`, `statusUpdatedTime`, `connectionState`, `connectionStateUpdatedTime`, `lastActivityTime`, and `lastAcceptingIpFilterRule` are not null, the updateTwin shall include its value in the json.**]**
 
 
 ### updateDeviceManager
@@ -591,7 +591,7 @@ public void updateTwin(String json) throws IllegalArgumentException
 **SRS_TWINPARSER_21_094: [**If the provided json have any duplicated `key`, the updateTwin shall use the content of the last one in the String.**]**  
 **SRS_TWINPARSER_21_097: [**If the provided json have any duplicated `properties` or `tags`, the updateTwin shall throw IllegalArgumentException.**]**  
 **SRS_TWINPARSER_21_098: [**If the provided json is properties only and contains duplicated `desired` or `reported`, the updateTwin shall throws IllegalArgumentException.**]**  
-**SRS_TWINPARSER_21_172: [**If the provided json contains `deviceId`, `generationId`, `etag`, `status`, `statusReason`, `statusUpdatedTime`, `connectionState`, `connectionStateUpdatedTime`, `lastActivityTime`, and `lastAcceptingIpFilterRule`, the updateTwin shall store its value.**]**  
+**SRS_TWINPARSER_21_172: [**If the provided json contains `deviceId`, `generationId`, `etag`, `status`, `statusReason`, `statusUpdatedTime`, `connectionState`, `connectionStateUpdatedTime`, `lastActivityTime`, and `lastAcceptingIpFilterRule`, the updateTwin shall store its value.**]**
 
 
 ### getDesiredPropertyVersion

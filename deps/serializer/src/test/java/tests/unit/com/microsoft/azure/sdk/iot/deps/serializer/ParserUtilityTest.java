@@ -4,18 +4,22 @@
 package tests.unit.com.microsoft.azure.sdk.iot.deps.serializer;
 
 import com.google.gson.JsonElement;
+import com.microsoft.azure.sdk.iot.deps.serializer.ParserUtility;
 import mockit.Deencapsulation;
 import org.junit.Test;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  * Unit tests for serializer utility helpers
- * 100% methods, 96% lines covered
+ * 100% methods
+ * 96% lines covered
  */
 public class ParserUtilityTest
 {
@@ -598,5 +602,58 @@ public class ParserUtilityTest
 
         // assert
         Helpers.assertJson(json.toString(), "{}");
+    }
+
+    //Tests_SRS_PARSER_UTILITY_21_040: [If the provided string is null, empty or contains an invalid data format, the getSimpleDateTime shall throw IllegalArgumentException.]
+    @Test (expected = IllegalArgumentException.class)
+    public void getSimpleDateTimeGivenNullStringThrows()
+    {
+        ParserUtility.getSimpleDateTime(null);
+    }
+
+    //Tests_SRS_PARSER_UTILITY_21_040: [If the provided string is null, empty or contains an invalid data format, the getSimpleDateTime shall throw IllegalArgumentException.]
+    @Test (expected = IllegalArgumentException.class)
+    public void getSimpleDateTimeGivenEmptyStringThrows()
+    {
+        ParserUtility.getSimpleDateTime("");
+    }
+
+    //Tests_SRS_PARSER_UTILITY_21_041: [An IllegalArgumentException shall be thrown if the provided string is not in the format "yyyy-MM-dd'T'HH:mm:ss".]
+    @Test (expected = IllegalArgumentException.class)
+    public void getSimpleDateTimeGivenInvalidStringThrows()
+    {
+        ParserUtility.getSimpleDateTime("1/12/1970");
+    }
+
+    //Tests_SRS_PARSER_UTILITY_21_041: [An IllegalArgumentException shall be thrown if the provided string is not in the format "yyyy-MM-dd'T'HH:mm:ss".]
+    @Test
+    public void getSimpleDateTimeSuccess()
+    {
+        //A time that is comfortably after the UNIX epoch to avoid issues where other timezones take this time back before that epoch where dates cannot be parsed
+        Date date = new Date(200000000);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        String dateString = dateFormat.format(date);
+        assertEquals(date, ParserUtility.getSimpleDateTime(dateString));
+    }
+
+    //Codes_SRS_PARSER_UTILITY_21_042: [If the provided date is null, an IllegalArgumentException shall be thrown.]
+    @Test (expected = IllegalArgumentException.class)
+    public void getSimpleDateStringFromDateGivenNullDateThrows()
+    {
+        ParserUtility.getSimpleDateStringFromDate(null);
+    }
+
+    //Codes_SRS_PARSER_UTILITY_34_043: [The provided date will be converted into this format: "yyyy-MM-dd'T'HH:mm:ss".]
+    @Test
+    public void getSimpleDateStringFromDateSuccess()
+    {
+        //A time that is comfortably after the UNIX epoch to avoid issues where other timezones take this time back before that epoch where dates cannot be parsed
+        Date date = new Date(200000000);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        String expectedString = dateFormat.format(date);
+
+        String actualString = ParserUtility.getSimpleDateStringFromDate(date);
+
+        assertEquals(expectedString, actualString);
     }
 }

@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.sdk.iot.service;
 
-import com.google.gson.annotations.SerializedName;
 import com.microsoft.azure.sdk.iot.deps.serializer.JobPropertiesParser;
 
 import java.util.Date;
@@ -25,8 +24,16 @@ public class JobProperties {
 
     /**
      * @param jobId the job id
+     * @throws IllegalArgumentException if the provided jobId is null
      */
-    public void setJobId(String jobId) {
+    public void setJobId(String jobId) throws IllegalArgumentException
+    {
+        //Codes_SRS_SERVICE_SDK_JAVA_JOB_PROPERTIES_34_004: [If the provided jobId is null, an IllegalArgumentException shall be thrown.]
+        if (jobId == null)
+        {
+            throw new IllegalArgumentException("JobId cannot be null");
+        }
+
         JobId = jobId;
     }
 
@@ -163,133 +170,87 @@ public class JobProperties {
 
     public enum JobType
     {
-        @SerializedName("unknown")
         UNKNOWN,
-
-        @SerializedName("export")
         EXPORT,
-
-        @SerializedName("import")
         IMPORT
     }
 
     public enum JobStatus
     {
-        @SerializedName("unknown")
         UNKNOWN,
-
-        @SerializedName("enqueued")
         ENQUEUED,
-
-        @SerializedName("running")
         RUNNING,
-
-        @SerializedName("completed")
         COMPLETED,
-
-        @SerializedName("failed")
         FAILED,
-
-        @SerializedName("cancelled")
         CANCELLED
     }
 
     // CODES_SRS_SERVICE_SDK_JAVA_JOB_PROPERTIES_15_001: [The JobProperties class has the following properties: JobId,
     // StartTimeUtc, EndTimeUtc, JobType, JobStatus, Progress, InputBlobContainerUri, OutputBlobContainerUri,
     // ExcludeKeysInExport, FailureReason.]
-
-    @SerializedName("jobId")
     private String JobId;
-
-    @SerializedName("startTimeUtc")
     private Date StartTimeUtc;
-
-    @SerializedName("endTimeUtc")
     private Date EndTimeUtc;
-
-    @SerializedName("type")
     private JobType Type;
-
-    @SerializedName("status")
     private JobStatus Status;
-
-    @SerializedName("progress")
     private int Progress;
-
-    @SerializedName("inputBlobContainerUri")
     private String InputBlobContainerUri;
-
-    @SerializedName("outputBlobContainerUri")
     private String OutputBlobContainerUri;
-
-    @SerializedName("excludeKeysInExport")
     private boolean ExcludeKeysInExport;
-
-    @SerializedName("failureReason")
     private String FailureReason;
 
-    public static JobProperties fromJobPropertiesParser(JobPropertiesParser parser)
+    /**
+     * Constructs a new JobProperties object using a JobPropertiesParser object
+     * @param parser the parser object to convert from
+     */
+    public JobProperties(JobPropertiesParser parser)
     {
-        //Codes_SRS_SERVICE_SDK_JAVA_JOB_PROPERTIES_15_001: [This method shall convert the provided parser into a JobProperty object and return it]
-        JobProperties jobProperties = new JobProperties();
-        jobProperties.EndTimeUtc = parser.EndTimeUtc;
-        jobProperties.ExcludeKeysInExport = parser.ExcludeKeysInExport;
-        jobProperties.FailureReason = parser.FailureReason;
-        jobProperties.InputBlobContainerUri = parser.InputBlobContainerUri;
-        jobProperties.OutputBlobContainerUri = parser.OutputBlobContainerUri;
-        jobProperties.JobId = parser.JobId;
-        jobProperties.Progress = parser.Progress;
-        jobProperties.StartTimeUtc = parser.StartTimeUtc;
+        //Codes_SRS_SERVICE_SDK_JAVA_JOB_PROPERTIES_34_003: [This method shall convert the provided parser into a JobProperty object and return it.]
+        this.EndTimeUtc = parser.getEndTimeUtc();
+        this.ExcludeKeysInExport = parser.isExcludeKeysInExport();
+        this.FailureReason = parser.getFailureReason();
+        this.InputBlobContainerUri = parser.getInputBlobContainerUri();
+        this.OutputBlobContainerUri = parser.getOutputBlobContainerUri();
+        this.JobId = parser.getJobId();
+        this.Progress = parser.getProgress();
+        this.StartTimeUtc = parser.getStartTimeUtc();
 
-        if (parser.Status == null)
+        if (parser.getStatus() != null)
         {
-            jobProperties.Status = null;
-        }
-        else
-        {
-            jobProperties.Status = JobStatus.valueOf(parser.Status.toUpperCase());
+            this.Status = JobStatus.valueOf(parser.getStatus().toUpperCase());
         }
 
-        if (parser.Type == null)
+        if (parser.getType() != null)
         {
-            jobProperties.Type = null;
+            this.Type = JobType.valueOf(parser.getType().toUpperCase());
         }
-        else
-        {
-            jobProperties.Type = JobType.valueOf(parser.Type.toUpperCase());
-        }
-
-        return jobProperties;
     }
 
-    public static JobPropertiesParser toJobPropertiesParser(JobProperties jobProperties)
+    /**
+     * Converts this into a JobPropertiesParser object that can be used for serialization and deserialization
+     * @return the converted JobPropertiesParser object
+     */
+    public JobPropertiesParser toJobPropertiesParser()
     {
-        //Codes_SRS_SERVICE_SDK_JAVA_JOB_PROPERTIES_34_002: [This method shall convert the provided jobProperties into a JobPropertiesParser object and return it]
+        //Codes_SRS_SERVICE_SDK_JAVA_JOB_PROPERTIES_34_002: [This method shall convert this into a JobPropertiesParser object and return it.]
         JobPropertiesParser jobPropertiesParser = new JobPropertiesParser();
-        jobPropertiesParser.EndTimeUtc = jobProperties.EndTimeUtc;
-        jobPropertiesParser.ExcludeKeysInExport = jobProperties.ExcludeKeysInExport;
-        jobPropertiesParser.FailureReason = jobProperties.FailureReason;
-        jobPropertiesParser.InputBlobContainerUri = jobProperties.InputBlobContainerUri;
-        jobPropertiesParser.OutputBlobContainerUri = jobProperties.OutputBlobContainerUri;
-        jobPropertiesParser.JobId = jobProperties.JobId;
-        jobPropertiesParser.Progress = jobProperties.Progress;
-        jobPropertiesParser.StartTimeUtc = jobProperties.StartTimeUtc;
-        if (jobProperties.Status == null)
+        jobPropertiesParser.setEndTimeUtc(this.EndTimeUtc);
+        jobPropertiesParser.setExcludeKeysInExport(this.ExcludeKeysInExport);
+        jobPropertiesParser.setFailureReason(this.FailureReason);
+        jobPropertiesParser.setInputBlobContainerUri(this.InputBlobContainerUri);
+        jobPropertiesParser.setOutputBlobContainerUri(this.OutputBlobContainerUri);
+        jobPropertiesParser.setJobId(this.JobId);
+        jobPropertiesParser.setProgress(this.Progress);
+        jobPropertiesParser.setStartTimeUtc(this.StartTimeUtc);
+
+        if (this.Status != null)
         {
-            jobPropertiesParser.Status = null;
-        }
-        else
-        {
-            jobPropertiesParser.Status = jobProperties.Status.toString();
+            jobPropertiesParser.setStatus(this.Status.toString());
         }
 
-        if (jobProperties.Type == null)
+        if (this.Type != null)
         {
-            jobPropertiesParser.Type = null;
-        }
-        else
-        {
-            jobPropertiesParser.Type = jobProperties.Type.toString();
+            jobPropertiesParser.setType(this.Type.toString());
         }
 
         return jobPropertiesParser;

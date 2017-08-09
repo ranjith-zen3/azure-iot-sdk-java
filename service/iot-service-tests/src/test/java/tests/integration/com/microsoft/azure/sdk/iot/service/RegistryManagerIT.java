@@ -5,11 +5,10 @@
 
 package tests.integration.com.microsoft.azure.sdk.iot.service;
 
-import com.microsoft.azure.sdk.iot.service.AuthenticationType;
 import com.microsoft.azure.sdk.iot.service.Device;
 import com.microsoft.azure.sdk.iot.service.DeviceStatus;
 import com.microsoft.azure.sdk.iot.service.RegistryManager;
-import com.microsoft.azure.sdk.iot.service.auth.X509Thumbprint;
+import com.microsoft.azure.sdk.iot.service.auth.AuthenticationType;
 import com.microsoft.azure.sdk.iot.service.exceptions.IotHubException;
 import com.microsoft.azure.storage.StorageException;
 import org.junit.BeforeClass;
@@ -101,10 +100,12 @@ public class RegistryManagerIT
         // Assert
         assertEquals(deviceId, deviceAdded.getDeviceId());
         assertEquals(deviceId, deviceRetrieved.getDeviceId());
-        assertEquals(AuthenticationType.certificateAuthority, deviceRetrieved.getAuthentication().getAuthenticationType());
+        assertEquals(AuthenticationType.certificateAuthority, deviceRetrieved.getAuthenticationType());
         assertEquals(DeviceStatus.Disabled, deviceUpdated.getStatus());
-        assertNull(deviceAdded.getThumbprint());
-        assertNull(deviceRetrieved.getThumbprint());
+        assertNull(deviceAdded.getPrimaryThumbprint());
+        assertNull(deviceAdded.getSecondaryKey());
+        assertNull(deviceRetrieved.getPrimaryThumbprint());
+        assertNull(deviceRetrieved.getSecondaryThumbprint());
         assertTrue(deviceWasDeletedSuccessfully(registryManager, deviceId));
     }
 
@@ -116,7 +117,7 @@ public class RegistryManagerIT
 
         //-Create-//
         Device deviceAdded = Device.createDevice(deviceId, AuthenticationType.selfSigned);
-        deviceAdded.setThumbprint(new X509Thumbprint(primaryThumbprint, secondaryThumbprint));
+        deviceAdded.setThumbprint(primaryThumbprint, secondaryThumbprint);
         registryManager.addDevice(deviceAdded);
 
         //-Read-//
@@ -124,7 +125,7 @@ public class RegistryManagerIT
 
         //-Update-//
         Device deviceUpdated = registryManager.getDevice(deviceId);
-        deviceUpdated.setThumbprint(new X509Thumbprint(primaryThumbprint2, secondaryThumbprint2));
+        deviceUpdated.setThumbprint(primaryThumbprint2, secondaryThumbprint2);
         deviceUpdated = registryManager.updateDevice(deviceUpdated);
 
         //-Delete-//
@@ -133,8 +134,8 @@ public class RegistryManagerIT
         // Assert
         assertEquals(deviceId, deviceAdded.getDeviceId());
         assertEquals(deviceId, deviceRetrieved.getDeviceId());
-        assertEquals(AuthenticationType.selfSigned, deviceAdded.getAuthentication().getAuthenticationType());
-        assertEquals(AuthenticationType.selfSigned, deviceRetrieved.getAuthentication().getAuthenticationType());
+        assertEquals(AuthenticationType.selfSigned, deviceAdded.getAuthenticationType());
+        assertEquals(AuthenticationType.selfSigned, deviceRetrieved.getAuthenticationType());
         assertEquals(primaryThumbprint, deviceAdded.getPrimaryThumbprint());
         assertEquals(secondaryThumbprint, deviceAdded.getSecondaryThumbprint());
         assertEquals(primaryThumbprint, deviceRetrieved.getPrimaryThumbprint());

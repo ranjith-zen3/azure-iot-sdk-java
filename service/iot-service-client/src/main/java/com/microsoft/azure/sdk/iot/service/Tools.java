@@ -251,9 +251,10 @@ public class Tools
     }
 
     /**
-     * Equality check for objects that accounts for null value comparisons
-     * @param a the first string
-     * @param b the seconds string
+     * Equality check for objects that accounts for null value comparisons. If both objects are null, this will return true.
+     * Both objects must have .equals(...) implemented correctly for this method to work properly.
+     * @param a the first object
+     * @param b the seconds object
      * @return if the two are equal
      */
     public static boolean areEqual(Object a, Object b)

@@ -1,9 +1,8 @@
 package tests.integration.com.microsoft.azure.sdk.iot.service;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.microsoft.azure.sdk.iot.deps.serializer.ExportImportDeviceParser;
 import com.microsoft.azure.sdk.iot.service.*;
+import com.microsoft.azure.sdk.iot.service.auth.Authentication;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.*;
@@ -182,7 +181,7 @@ public class ExportImportIT
         while (scanner.hasNextLine())
         {
             String exportImportDeviceJson = scanner.nextLine();
-            ExportImportDevice device = ExportImportDevice.fromExportImportDeviceParser(ExportImportDeviceParser.fromJson(exportImportDeviceJson));
+            ExportImportDevice device = new ExportImportDevice(new ExportImportDeviceParser(exportImportDeviceJson));
             device.setImportMode(ImportMode.CreateOrUpdate);
             result.add(device);
         }
@@ -202,7 +201,7 @@ public class ExportImportIT
         for (int i = 0; i < devices.size(); i++)
         {
             devices.get(i).setImportMode(importMode);
-            devicesToAdd.append(ExportImportDeviceParser.toJson(ExportImportDevice.toExportImportDeviceParser(devices.get(i))));
+            devicesToAdd.append(devices.get(i).toExportImportDeviceParser().toJson());
 
             if (i < devices.size() - 1)
             {

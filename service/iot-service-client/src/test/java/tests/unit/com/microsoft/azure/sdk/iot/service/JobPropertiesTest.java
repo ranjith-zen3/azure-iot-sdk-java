@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 package tests.unit.com.microsoft.azure.sdk.iot.service;
 
 import com.microsoft.azure.sdk.iot.deps.serializer.JobPropertiesParser;
@@ -11,44 +14,44 @@ import static junit.framework.TestCase.assertEquals;
 /**
  * Code Coverage
  * Methods:100%
- * Lines: 97%
+ * Lines: 100%
  */
 public class JobPropertiesTest
 {
-    //Tests_SRS_SERVICE_SDK_JAVA_JOB_PROPERTIES_15_001: [This method shall convert the provided parser into a JobProperty object and return it]
+    //Tests_SRS_SERVICE_SDK_JAVA_JOB_PROPERTIES_34_003: [This method shall convert the provided parser into a JobProperty object and return it.]
     @Test
     public void fromJobPropertiesParser()
     {
         // arrange
         JobPropertiesParser parser = new JobPropertiesParser();
-        parser.EndTimeUtc = new Date(System.currentTimeMillis());
-        parser.StartTimeUtc = new Date(System.currentTimeMillis());
-        parser.FailureReason = "failureReason";
-        parser.InputBlobContainerUri = "inputContainerUri";
-        parser.OutputBlobContainerUri = "outputContainerUri";
-        parser.Progress = 0;
-        parser.ExcludeKeysInExport = false;
-        parser.JobId = "jobId";
-        parser.Status = JobProperties.JobStatus.COMPLETED.toString();
-        parser.Type = JobProperties.JobType.IMPORT.toString();
+        parser.setEndTimeUtc(new Date(System.currentTimeMillis()));
+        parser.setStartTimeUtc(new Date(System.currentTimeMillis()));
+        parser.setFailureReason("failureReason");
+        parser.setInputBlobContainerUri("inputContainerUri");
+        parser.setOutputBlobContainerUri("outputContainerUri");
+        parser.setProgress(0);
+        parser.setExcludeKeysInExport(false);
+        parser.setJobId("jobId");
+        parser.setStatus(JobProperties.JobStatus.COMPLETED.toString());
+        parser.setType(JobProperties.JobType.IMPORT.toString());
 
         // act
-        JobProperties jobProperties = JobProperties.fromJobPropertiesParser(parser);
+        JobProperties jobProperties = new JobProperties(parser);
 
         // assert
-        assertEquals(parser.InputBlobContainerUri, jobProperties.getInputBlobContainerUri());
-        assertEquals(parser.OutputBlobContainerUri, jobProperties.getOutputBlobContainerUri());
-        assertEquals(parser.ExcludeKeysInExport, jobProperties.getExcludeKeysInExport());
-        assertEquals(parser.Type, jobProperties.getType().toString());
-        assertEquals(parser.Status, jobProperties.getStatus().toString());
-        assertEquals(parser.Progress, jobProperties.getProgress());
-        assertEquals(parser.JobId, jobProperties.getJobId());
-        assertEquals(parser.FailureReason, jobProperties.getFailureReason());
-        assertEquals(parser.EndTimeUtc, jobProperties.getEndTimeUtc());
-        assertEquals(parser.StartTimeUtc, jobProperties.getStartTimeUtc());
+        assertEquals(parser.getInputBlobContainerUri(), jobProperties.getInputBlobContainerUri());
+        assertEquals(parser.getOutputBlobContainerUri(), jobProperties.getOutputBlobContainerUri());
+        assertEquals(parser.isExcludeKeysInExport(), jobProperties.getExcludeKeysInExport());
+        assertEquals(parser.getType(), jobProperties.getType().toString());
+        assertEquals(parser.getStatus(), jobProperties.getStatus().toString());
+        assertEquals(parser.getProgress(), jobProperties.getProgress());
+        assertEquals(parser.getJobId(), jobProperties.getJobId());
+        assertEquals(parser.getFailureReason(), jobProperties.getFailureReason());
+        assertEquals(parser.getEndTimeUtc(), jobProperties.getEndTimeUtc());
+        assertEquals(parser.getStartTimeUtc(), jobProperties.getStartTimeUtc());
     }
 
-    //Tests_SRS_SERVICE_SDK_JAVA_JOB_PROPERTIES_34_002: [This method shall convert the provided jobProperties into a JobPropertiesParser object and return it]
+    //Tests_SRS_SERVICE_SDK_JAVA_JOB_PROPERTIES_34_002: [This method shall convert this into a JobPropertiesParser object and return it.]
     @Test
     public void toJobPropertiesParser()
     {
@@ -66,18 +69,25 @@ public class JobPropertiesTest
         jobProperties.setType(JobProperties.JobType.IMPORT);
 
         // act
-        JobPropertiesParser parser = JobProperties.toJobPropertiesParser(jobProperties);
+        JobPropertiesParser parser = jobProperties.toJobPropertiesParser();
 
         // assert
-        assertEquals(parser.InputBlobContainerUri, jobProperties.getInputBlobContainerUri());
-        assertEquals(parser.OutputBlobContainerUri, jobProperties.getOutputBlobContainerUri());
-        assertEquals(parser.ExcludeKeysInExport, jobProperties.getExcludeKeysInExport());
-        assertEquals(parser.Type, jobProperties.getType().toString());
-        assertEquals(parser.Status, jobProperties.getStatus().toString());
-        assertEquals(parser.Progress, jobProperties.getProgress());
-        assertEquals(parser.JobId, jobProperties.getJobId());
-        assertEquals(parser.FailureReason, jobProperties.getFailureReason());
-        assertEquals(parser.EndTimeUtc, jobProperties.getEndTimeUtc());
-        assertEquals(parser.StartTimeUtc, jobProperties.getStartTimeUtc());
+        assertEquals(parser.getInputBlobContainerUri(), jobProperties.getInputBlobContainerUri());
+        assertEquals(parser.getOutputBlobContainerUri(), jobProperties.getOutputBlobContainerUri());
+        assertEquals(parser.isExcludeKeysInExport(), jobProperties.getExcludeKeysInExport());
+        assertEquals(parser.getType(), jobProperties.getType().toString());
+        assertEquals(parser.getStatus(), jobProperties.getStatus().toString());
+        assertEquals(parser.getProgress(), jobProperties.getProgress());
+        assertEquals(parser.getJobId(), jobProperties.getJobId());
+        assertEquals(parser.getFailureReason(), jobProperties.getFailureReason());
+        assertEquals(parser.getEndTimeUtc(), jobProperties.getEndTimeUtc());
+        assertEquals(parser.getStartTimeUtc(), jobProperties.getStartTimeUtc());
+    }
+
+    //Tests_SRS_SERVICE_SDK_JAVA_JOB_PROPERTIES_34_004: [If the provided jobId is null, an IllegalArgumentException shall be thrown.]
+    @Test (expected = IllegalArgumentException.class)
+    public void cannotSetJobIdToNull()
+    {
+        new JobProperties().setJobId(null);
     }
 }

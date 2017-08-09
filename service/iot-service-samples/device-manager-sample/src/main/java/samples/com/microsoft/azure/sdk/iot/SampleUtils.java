@@ -23,12 +23,6 @@ public class SampleUtils
     public static final String deviceId = "[Device Id goes here]";
     public static final String exportFileLocation = "[Insert local folder here - something like C:\\foldername\\]";
 
-    //Thumbprints need to be 40 characters long
-    public static final String primaryThumbprint = "0000000000000000000000000000000000000000";
-    public static final String secondaryThumbprint = "0000000000000000000000000000000000000000";
-    public static final String updatedPrimaryThumbprint = "1111111111111111111111111111111111111111";
-    public static final String updatedSecondaryThumbprint = "1111111111111111111111111111111111111111";
-
     public static String getContainerSasUri(CloudBlobContainer container) throws InvalidKeyException, StorageException
     {
         //Set the expiry time and permissions for the container.

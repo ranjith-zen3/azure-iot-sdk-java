@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 package tests.unit.com.microsoft.azure.sdk.iot.deps.serializer;
 
 import com.microsoft.azure.sdk.iot.deps.serializer.RegistryStatisticsParser;
@@ -12,23 +15,44 @@ import static junit.framework.TestCase.assertEquals;
  */
 public class RegistryStatisticsParserTest
 {
-    //Tests_SRS_REGISTRY_STATISTICS_PROPERTIES_PARSER_34_001: [The parser will return a json representation of the provided RegistryStatisticsParser]
-    //Tests_SRS_REGISTRY_STATISTICS_PROPERTIES_PARSER_34_002: [The parser will create and return an instance of a RegistryStatisticsParser object based off the provided json]
+    //Tests_SRS_REGISTRY_STATISTICS_PROPERTIES_PARSER_34_001: [This method shall return a json representation of this.]
+    //Tests_SRS_REGISTRY_STATISTICS_PROPERTIES_PARSER_34_002: [This constructor shall create and return an instance of a RegistryStatisticsParser object based off the provided json.]
     @Test
     public void testBasicFunctionality()
     {
         // arrange
         RegistryStatisticsParser parser = new RegistryStatisticsParser();
-        parser.totalDeviceCount = 2;
-        parser.enabledDeviceCount = 2;
-        parser.disabledDeviceCount = 0;
+        parser.setTotalDeviceCount(2);
+        parser.setEnabledDeviceCount(2);
+        parser.setDisabledDeviceCount(0);
 
         // act
-        RegistryStatisticsParser processedParser = RegistryStatisticsParser.fromJson(RegistryStatisticsParser.toJson(parser));
+        RegistryStatisticsParser processedParser = new RegistryStatisticsParser(parser.toJson());
 
         // assert
-        assertEquals(parser.totalDeviceCount, processedParser.totalDeviceCount);
-        assertEquals(parser.enabledDeviceCount, processedParser.enabledDeviceCount);
-        assertEquals(parser.disabledDeviceCount, processedParser.disabledDeviceCount);
+        assertEquals(parser.getTotalDeviceCount(), processedParser.getTotalDeviceCount());
+        assertEquals(parser.getEnabledDeviceCount(), processedParser.getEnabledDeviceCount());
+        assertEquals(parser.getDisabledDeviceCount(), processedParser.getDisabledDeviceCount());
+    }
+
+    //Tests_SRS_REGISTRY_STATISTICS_PROPERTIES_PARSER_34_003: [If the provided json is null, empty, or cannot be parsed into a RegistryStatisticsParser object, an IllegalArgumentException shall be thrown.]
+    @Test (expected = IllegalArgumentException.class)
+    public void nullJsonForConstructorThrows()
+    {
+        new RegistryStatisticsParser(null);
+    }
+
+    //Tests_SRS_REGISTRY_STATISTICS_PROPERTIES_PARSER_34_003: [If the provided json is null, empty, or cannot be parsed into a RegistryStatisticsParser object, an IllegalArgumentException shall be thrown.]
+    @Test (expected = IllegalArgumentException.class)
+    public void emptyJsonForConstructorThrows()
+    {
+        new RegistryStatisticsParser("");
+    }
+
+    //Tests_SRS_REGISTRY_STATISTICS_PROPERTIES_PARSER_34_003: [If the provided json is null, empty, or cannot be parsed into a RegistryStatisticsParser object, an IllegalArgumentException shall be thrown.]
+    @Test (expected = IllegalArgumentException.class)
+    public void invalidJsonForConstructorThrows()
+    {
+        new RegistryStatisticsParser("}");
     }
 }

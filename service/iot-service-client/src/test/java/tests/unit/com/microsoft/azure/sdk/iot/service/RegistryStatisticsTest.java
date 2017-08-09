@@ -1,8 +1,18 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 package tests.unit.com.microsoft.azure.sdk.iot.service;
 
 import com.microsoft.azure.sdk.iot.deps.serializer.RegistryStatisticsParser;
+import com.microsoft.azure.sdk.iot.service.RegistryManager;
 import com.microsoft.azure.sdk.iot.service.RegistryStatistics;
+import com.microsoft.azure.sdk.iot.service.exceptions.IotHubException;
+import mockit.Deencapsulation;
+import mockit.Mocked;
+import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.IOException;
 
 import static junit.framework.TestCase.assertEquals;
 
@@ -19,16 +29,77 @@ public class RegistryStatisticsTest
     {
         // arrange
         RegistryStatisticsParser parser = new RegistryStatisticsParser();
-        parser.totalDeviceCount = 20;
-        parser.enabledDeviceCount = 15;
-        parser.disabledDeviceCount = 5;
+        parser.setTotalDeviceCount(20);
+        parser.setEnabledDeviceCount(15);
+        parser.setDisabledDeviceCount(5);
 
         // act
-        RegistryStatistics registryStatistics = RegistryStatistics.fromRegistryStatisticsParser(parser);
+        RegistryStatistics registryStatistics = new RegistryStatistics(parser);
 
         // assert
-        assertEquals(parser.totalDeviceCount, registryStatistics.getTotalDeviceCount());
-        assertEquals(parser.enabledDeviceCount, registryStatistics.getEnabledDeviceCount());
-        assertEquals(parser.disabledDeviceCount, registryStatistics.getDisabledDeviceCount());
+        assertEquals(parser.getTotalDeviceCount(), registryStatistics.getTotalDeviceCount());
+        assertEquals(parser.getEnabledDeviceCount(), registryStatistics.getEnabledDeviceCount());
+        assertEquals(parser.getDisabledDeviceCount(), registryStatistics.getDisabledDeviceCount());
+    }
+
+    //Tests_SRS_SERVICE_SDK_JAVA_REGISTRY_STATISTICS_34_002: [This method shall convert this into a RegistryStatisticsParser object and return it.]
+    @Test
+    public void testToRegistryStatisticsParser()
+    {
+        // arrange
+        RegistryStatisticsParser expectedParser = new RegistryStatisticsParser();
+        expectedParser.setTotalDeviceCount(10);
+        expectedParser.setEnabledDeviceCount(7);
+        expectedParser.setDisabledDeviceCount(3);
+
+        RegistryStatistics registryStatistics = Deencapsulation.newInstance(RegistryStatistics.class, new Class[] {});
+        Deencapsulation.setField(registryStatistics, "totalDeviceCount", 10);
+        Deencapsulation.setField(registryStatistics, "enabledDeviceCount", 7);
+        Deencapsulation.setField(registryStatistics, "disabledDeviceCount", 3);
+
+        // act
+        RegistryStatisticsParser actualParser = registryStatistics.toRegistryStatisticsParser();
+
+        // assert
+        assertEquals(expectedParser.getTotalDeviceCount(), actualParser.getTotalDeviceCount());
+        assertEquals(expectedParser.getEnabledDeviceCount(), actualParser.getEnabledDeviceCount());
+        assertEquals(expectedParser.getDisabledDeviceCount(), actualParser.getDisabledDeviceCount());
+    }
+
+    @Test
+    public void constructorSucceeds(@Mocked RegistryManager mockedRegistryManager) throws IOException, IotHubException
+    {
+        //arrange
+
+        String connectionString = "HostName=aaa.bbb.ccc;SharedAccessKeyName=XXX;SharedAccessKey=YYY";
+
+        RegistryManager registryManager = RegistryManager.createFromConnectionString(connectionString);
+
+        // act
+        RegistryStatistics statistics = registryManager.getStatistics();
+    }
+
+    @Test
+    public void gettersSucceeds(@Mocked RegistryManager mockedRegistryManager) throws IOException, IotHubException
+    {
+        //arrange
+
+        String connectionString = "HostName=aaa.bbb.ccc;SharedAccessKeyName=XXX;SharedAccessKey=YYY";
+
+        RegistryManager registryManager = RegistryManager.createFromConnectionString(connectionString);
+
+        RegistryStatistics statistics = registryManager.getStatistics();
+
+        //act
+        final long disabledDeviceCount = statistics.getDisabledDeviceCount();
+        final long enabledDeviceCount = statistics.getEnabledDeviceCount();
+        final long totalDeviceCount = statistics.getTotalDeviceCount();
+
+        //assert
+
+        Assert.assertEquals(disabledDeviceCount, 0);
+        Assert.assertEquals(enabledDeviceCount, 0);
+        Assert.assertEquals(totalDeviceCount, 0);
+
     }
 }

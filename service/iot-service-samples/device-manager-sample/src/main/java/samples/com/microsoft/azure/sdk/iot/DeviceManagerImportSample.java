@@ -39,12 +39,9 @@ public class DeviceManagerImportSample
         for (int i = 0; i < 1; i++)
         {
             String deviceId = UUID.randomUUID().toString();
-            Device device = Device.createFromId(deviceId, null, null);
-            Authentication authentication = new Authentication(device.getSymmetricKey());
 
             ExportImportDevice deviceToAdd = new ExportImportDevice();
             deviceToAdd.setId(deviceId);
-            deviceToAdd.setAuthentication(authentication);
             deviceToAdd.setStatus(DeviceStatus.Enabled);
             deviceToAdd.setImportMode(ImportMode.CreateOrUpdate);
 

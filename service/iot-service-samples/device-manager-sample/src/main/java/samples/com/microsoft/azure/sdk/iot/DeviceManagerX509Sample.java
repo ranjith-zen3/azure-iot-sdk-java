@@ -5,11 +5,9 @@
 
 package samples.com.microsoft.azure.sdk.iot;
 
-import com.microsoft.azure.sdk.iot.service.AuthenticationType;
 import com.microsoft.azure.sdk.iot.service.Device;
-import com.microsoft.azure.sdk.iot.service.DeviceStatus;
 import com.microsoft.azure.sdk.iot.service.RegistryManager;
-import com.microsoft.azure.sdk.iot.service.auth.X509Thumbprint;
+import com.microsoft.azure.sdk.iot.service.auth.AuthenticationType;
 import com.microsoft.azure.sdk.iot.service.exceptions.IotHubException;
 
 import java.io.IOException;
@@ -63,7 +61,6 @@ public class DeviceManagerX509Sample
         if (isSelfSigned)
         {
             device = Device.createDevice(SampleUtils.deviceId, AuthenticationType.selfSigned);
-            device.setThumbprint(new X509Thumbprint(SampleUtils.primaryThumbprint, SampleUtils.secondaryThumbprint));
         }
         else
         {
@@ -127,7 +124,6 @@ public class DeviceManagerX509Sample
         if (isSelfSigned)
         {
             device = Device.createDevice(SampleUtils.deviceId, AuthenticationType.selfSigned);
-            device.setThumbprint(new X509Thumbprint(SampleUtils.updatedPrimaryThumbprint, SampleUtils.updatedSecondaryThumbprint));
         }
         else
         {

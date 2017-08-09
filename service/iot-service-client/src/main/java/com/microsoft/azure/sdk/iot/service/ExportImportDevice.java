@@ -5,40 +5,65 @@
 
 package com.microsoft.azure.sdk.iot.service;
 
-import com.google.gson.annotations.SerializedName;
 import com.microsoft.azure.sdk.iot.deps.serializer.*;
-import com.microsoft.azure.sdk.iot.service.auth.SymmetricKey;
-import com.microsoft.azure.sdk.iot.service.auth.X509Thumbprint;
+import com.microsoft.azure.sdk.iot.service.auth.Authentication;
+import com.microsoft.azure.sdk.iot.service.auth.AuthenticationType;
+
+import java.util.Random;
 
 public class ExportImportDevice
 {
     // CODES_SRS_SERVICE_SDK_JAVA_IMPORT_EXPORT_DEVICE_15_001: [The ExportImportDevice class has the following properties: Id,
     // Etag, ImportMode, Status, StatusReason, Authentication]
 
-    @SerializedName("id")
     private String Id;
-
-    @SerializedName("eTag")
     private String ETag;
-
-    @SerializedName("importMode")
     private ImportMode ImportMode;
-
-    @SerializedName("status")
     private DeviceStatus Status;
-
-    @SerializedName("statusReason")
     private String StatusReason;
-
-    @SerializedName("authentication")
     private Authentication Authentication;
+
+    private final int RANDOM_DEVICE_ID_NUMBER_UPPER_LIMIT = 2000000000;
+    private final int RANDOM_DEVICE_ID_NUMBER_LOWER_LIMIT = 1000000000;
+
+    /**
+     * Default constructor for an ExportImportDevice object. Randomly generates a device ID and uses a randomly generated shared access signature for authentication
+     */
+    public ExportImportDevice()
+    {
+        //Codes_SRS_SERVICE_SDK_JAVA_DEVICE_34_050: [This constructor will automatically set the authentication type of this object to be sas, and will generate a deviceId and symmetric key.]
+        this.Authentication = new Authentication(AuthenticationType.sas);
+
+        Random rand = new Random(System.currentTimeMillis());
+        int randomDeviceIdNumber = rand.nextInt(RANDOM_DEVICE_ID_NUMBER_UPPER_LIMIT) + RANDOM_DEVICE_ID_NUMBER_LOWER_LIMIT;
+        this.Id = "exportImportDevice_" + randomDeviceIdNumber;
+    }
+
+    /**
+     * Constructor for an ExportImportDevice object.
+     * @param deviceId the id of the new device
+     * @param authenticationType the type of authentication to be used. For shared access signature and self signed x.509, all keys will be generated automatically.
+     */
+    public ExportImportDevice(String deviceId, AuthenticationType authenticationType)
+    {
+        //Codes_SRS_SERVICE_SDK_JAVA_DEVICE_34_051: [This constructor will save the provided deviceId and authenticationType to itself.]
+        this.Authentication = new Authentication(authenticationType);
+        this.Id = deviceId;
+    }
 
     /**
      * Setter for device id.
      * @param id The device id.
+     * @throws IllegalArgumentException if the provided id is null
      */
-    public void setId(String id)
+    public void setId(String id) throws IllegalArgumentException
     {
+        //Codes_SRS_SERVICE_SDK_JAVA_DEVICE_34_055: [If the provided id is null, an IllegalArgumentException shall be thrown.]
+        if (id == null)
+        {
+            throw new IllegalArgumentException("The provided id may not be null");
+        }
+
         Id = id;
     }
 
@@ -127,7 +152,7 @@ public class ExportImportDevice
      * Getter for device authentication mechanism.
      * @return The device authentication mechanism.
      */
-    public com.microsoft.azure.sdk.iot.service.Authentication getAuthentication()
+    public Authentication getAuthentication()
     {
         return Authentication;
     }
@@ -135,28 +160,35 @@ public class ExportImportDevice
     /**
      * Setter for device authentication mechanism.
      * @param authentication The device authentication mechanism.
+     * @throws IllegalArgumentException if the provided authentication is null
      */
-    public void setAuthentication(Authentication authentication)
+    public void setAuthentication(Authentication authentication) throws IllegalArgumentException
     {
+        //Codes_SRS_SERVICE_SDK_JAVA_DEVICE_34_056: [If the provided authentication is null, an IllegalArgumentException shall be thrown.]
+        if (authentication == null)
+        {
+            throw new IllegalArgumentException("The provided authentication object may not be null");
+        }
+
         Authentication = authentication;
     }
 
     @Override
-    public boolean equals(Object obj)
+    public boolean equals(Object other)
     {
-        if (obj instanceof ExportImportDevice)
+        if (other instanceof ExportImportDevice)
         {
-            ExportImportDevice other = (ExportImportDevice) obj;
+            ExportImportDevice otherExportImportDevice = (ExportImportDevice) other;
 
-            if (!Tools.areEqual(this.getAuthentication(), other.getAuthentication()))
+            if (!Tools.areEqual(this.getAuthentication(), otherExportImportDevice.getAuthentication()))
             {
                 return false;
             }
-            else if (!Tools.areEqual(this.getStatus(), other.getStatus()))
+            else if (!Tools.areEqual(this.getStatus(), otherExportImportDevice.getStatus()))
             {
                 return false;
             }
-            else if (!Tools.areEqual(this.getImportMode(), other.getImportMode()))
+            else if (!Tools.areEqual(this.getImportMode(), otherExportImportDevice.getImportMode()))
             {
                 return false;
             }
@@ -175,84 +207,105 @@ public class ExportImportDevice
         return result;
     }
 
-    public static ExportImportDevice fromExportImportDeviceParser(ExportImportDeviceParser parser)
+    /**
+     * Retrieves information from the provided parser and saves it to this. All information on this will be overwritten.
+     * @param parser the parser to read from
+     */
+    public ExportImportDevice(ExportImportDeviceParser parser)
     {
-        ExportImportDevice device = new ExportImportDevice();
-        device.ETag = parser.ETag;
-        device.Id = parser.Id;
-        device.StatusReason = parser.StatusReason;
-
-        if (parser.ImportMode != null)
+        if (parser.getId() == null)
         {
-            device.ImportMode = com.microsoft.azure.sdk.iot.service.ImportMode.valueOf(parser.ImportMode);
+            //Codes_SRS_SERVICE_SDK_JAVA_DEVICE_34_053: [If the provided parser does not have values for the properties deviceId or authentication, an IllegalArgumentException shall be thrown.]
+            throw new IllegalArgumentException("The Id property of the parser object may not be null");
         }
 
-        if (parser.Status != null)
+        if (parser.getAuthentication() == null)
         {
-            device.Status = DeviceStatus.valueOf(parser.Status);
+            //Codes_SRS_SERVICE_SDK_JAVA_DEVICE_34_053: [If the provided parser does not have values for the properties deviceId or authentication, an IllegalArgumentException shall be thrown.]
+            throw new IllegalArgumentException("The Authentication property of the parser object may not be null");
         }
 
-        device.Authentication = new Authentication(AuthenticationType.valueOf(parser.Authentication.type.toString()));
+        //Codes_SRS_SERVICE_SDK_JAVA_DEVICE_34_052: [This constructor will use the properties of the provided parser object to set the new ExportImportDevice's properties.]
+        this.ETag = parser.getETag();
+        this.Id = parser.getId();
+        this.StatusReason = parser.getStatusReason();
 
-        if (device.Authentication.getAuthenticationType() == AuthenticationType.certificateAuthority)
+        if (parser.getImportMode() != null)
+        {
+            this.ImportMode = com.microsoft.azure.sdk.iot.service.ImportMode.valueOf(parser.getImportMode());
+        }
+
+        if (parser.getStatus() != null)
+        {
+            this.Status = DeviceStatus.valueOf(parser.getStatus());
+        }
+
+        this.Authentication = new Authentication(AuthenticationType.valueOf(parser.getAuthentication().getType().toString()));
+        if (this.Authentication.getAuthenticationType() == AuthenticationType.certificateAuthority)
         {
             //do nothing
         }
-        else if (device.Authentication.getAuthenticationType() == AuthenticationType.selfSigned)
+        else if (this.Authentication.getAuthenticationType() == AuthenticationType.selfSigned)
         {
-            device.Authentication.setThumbprint(new X509Thumbprint());
-            device.Authentication.getThumbprint().setPrimaryThumbprint(parser.Authentication.thumbprint.primaryThumbprint);
-            device.Authentication.getThumbprint().setSecondaryThumbprint(parser.Authentication.thumbprint.secondaryThumbprint);
+            this.Authentication = new Authentication(
+                    parser.getAuthentication().getThumbprint().getPrimaryThumbprint(),
+                    parser.getAuthentication().getThumbprint().getSecondaryThumbprint());
         }
-        else if (device.Authentication.getAuthenticationType() == AuthenticationType.sas)
+        else if (this.Authentication.getAuthenticationType() == AuthenticationType.sas)
         {
-            device.Authentication.setSymmetricKey(new SymmetricKey());
-            device.Authentication.getSymmetricKey().setPrimaryKey(parser.Authentication.symmetricKey.primaryKey);
-            device.Authentication.getSymmetricKey().setSecondaryKey(parser.Authentication.symmetricKey.secondaryKey);
+            this.Authentication.getSymmetricKey().setPrimaryKey(parser.getAuthentication().getSymmetricKey().getPrimaryKey());
+            this.Authentication.getSymmetricKey().setSecondaryKey(parser.getAuthentication().getSymmetricKey().getSecondaryKey());
         }
-
-        return device;
     }
 
-    public static ExportImportDeviceParser toExportImportDeviceParser(ExportImportDevice device)
+    /**
+     * Converts this into a ExportImportDeviceParser object. To serialize a ExportImportDevice object, it must first be converted to a ExportImportDeviceParser object.
+     * @return the ExportImportDeviceParser object that can be serialized.
+     */
+    public ExportImportDeviceParser toExportImportDeviceParser()
     {
+        //Codes_SRS_SERVICE_SDK_JAVA_DEVICE_34_054: [This method shall convert this into an ExportImportDeviceParser object and return it.]
         ExportImportDeviceParser parser = new ExportImportDeviceParser();
-        parser.ETag = device.ETag;
-        parser.Id = device.Id;
-        parser.StatusReason = device.StatusReason;
+        parser.setETag(this.ETag);
+        parser.setId(this.Id);
+        parser.setStatusReason(this.StatusReason);
 
-        if (device.ImportMode != null)
+        if (this.ImportMode != null)
         {
-            parser.ImportMode = device.ImportMode.toString();
+            parser.setImportMode(this.ImportMode.toString());
         }
 
-        if (device.Status != null)
+        if (this.Status != null)
         {
-            parser.Status = device.Status.toString();
+            parser.setStatus(this.Status.toString());
         }
 
-        if (device.Authentication != null)
+        if (this.Authentication != null)
         {
-            parser.Authentication = new AuthenticationParser();
-            if (device.getAuthentication().getAuthenticationType() != null)
+            parser.setAuthentication(new AuthenticationParser());
+            if (this.getAuthentication().getAuthenticationType() != null)
             {
-                parser.Authentication.type = AuthenticationTypeParser.valueOf(device.Authentication.getAuthenticationType().toString());
-                if (device.getAuthentication().getAuthenticationType() == AuthenticationType.certificateAuthority)
+                parser.getAuthentication().setType(AuthenticationTypeParser.valueOf(this.Authentication.getAuthenticationType().toString()));
+                if (this.getAuthentication().getAuthenticationType() == AuthenticationType.certificateAuthority)
                 {
                     //do nothing
                 }
-                else if (device.getAuthentication().getAuthenticationType() == AuthenticationType.selfSigned)
+                else if (this.getAuthentication().getAuthenticationType() == AuthenticationType.selfSigned)
                 {
-                    if (device.Authentication.getThumbprint() != null)
+                    if (this.Authentication.getPrimaryThumbprint() != null && this.Authentication.getSecondaryThumbprint() != null)
                     {
-                        parser.Authentication.thumbprint = new X509ThumbprintParser(device.Authentication.getThumbprint().getPrimaryThumbprint(), device.Authentication.getThumbprint().getSecondaryThumbprint());
+                        parser.getAuthentication().setThumbprint(new X509ThumbprintParser(
+                                this.Authentication.getPrimaryThumbprint(),
+                                this.Authentication.getSecondaryThumbprint()));
                     }
                 }
-                else if (device.getAuthentication().getAuthenticationType() == AuthenticationType.sas)
+                else if (this.getAuthentication().getAuthenticationType() == AuthenticationType.sas)
                 {
-                    if (device.Authentication.getSymmetricKey() != null)
+                    if (this.Authentication.getSymmetricKey() != null)
                     {
-                        parser.Authentication.symmetricKey = new SymmetricKeyParser(device.Authentication.getSymmetricKey().getPrimaryKey(), device.Authentication.getSymmetricKey().getSecondaryKey());
+                        parser.getAuthentication().setSymmetricKey(new SymmetricKeyParser(
+                                this.Authentication.getSymmetricKey().getPrimaryKey(),
+                                this.Authentication.getSymmetricKey().getSecondaryKey()));
                     }
                 }
             }

@@ -11,7 +11,9 @@ import com.google.gson.JsonObject;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * Set of static functions to help the serializer.
@@ -20,6 +22,7 @@ public class ParserUtility
 {
     private static final String DATEFORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSS'Z'";
     private static final String OFFSETFORMAT = "yyyy-MM-dd'T'HH:mm:ssXXX";
+    private static final String SIMPLEDATEFORMAT = "yyyy-MM-dd'T'HH:mm:ss";
     private static final String TIMEZONE = "UTC";
     private static final String SELECT = "select";
     private static final String FROM = "from";
@@ -285,6 +288,8 @@ public class ParserUtility
     }
 
     /**
+
+    /**
      * Helper to convert a provided map in to a JsonElement, including sub-maps.
      *
      * @param map is the map to serialize
@@ -325,5 +330,4 @@ public class ParserUtility
 
         return json;
     }
-
 }

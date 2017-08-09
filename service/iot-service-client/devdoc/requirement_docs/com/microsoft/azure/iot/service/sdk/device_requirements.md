@@ -13,14 +13,13 @@ The Device class is the main DTO for the RegistryManager class. It implements st
 ```java
 public class Device
 {
-    public static Device createFromId(String deviceId, DeviceStatus status, SymmetricKey symmetricKey)
-    public static Device createCertificateSecuredDevice(String deviceId, DeviceStatus status)
-    public static Device createSelfSignedDevice(String deviceId, DeviceStatus status, String primaryThumbprint, String secondaryThumbprint)
+    public Device(DeviceParser parser)
+    public DeviceParser toDeviceParser()
 
     protected Device(String deviceId, DeviceStatus status, SymmetricKey symmetricKey)
 }
 ```
-**SRS_SERVICE_SDK_JAVA_DEVICE_12_001: [** The Device class has the following properties: Id, Etag, Authentication.SymmetricKey, State, StateReason, StateUpdatedTime, ConnectionState, ConnectionStateUpdatedTime, LastActivityTime, symmetricKey, thumbprint, status, authentication**]**
+**SRS_SERVICE_SDK_JAVA_DEVICE_12_001: [** The Device class has the following properties: Id, Etag, SymmetricKey, State, StateReason, StateUpdatedTime, ConnectionState, ConnectionStateUpdatedTime, LastActivityTime, symmetricKey, thumbprint, status, authentication**]**
 
 ### createFromId
 
@@ -31,33 +30,50 @@ public static Device createFromId(String deviceId, DeviceStatus status, Symmetri
 
 **SRS_SERVICE_SDK_JAVA_DEVICE_12_003: [** The function shall create a new instance of Device using the given id and return with it **]**
 
+### createDevice
+
+```java
+public static Device createDevice(String deviceId, AuthenticationType authenticationType)
+```
+**SRS_SERVICE_SDK_JAVA_DEVICE_34_009: [**The function shall throw IllegalArgumentException if the provided deviceId or authenticationType is empty or null.**]**
+
+**SRS_SERVICE_SDK_JAVA_DEVICE_34_010: [**The function shall create a new instance of Device using the given id and return it.**]**
+
+
 ### Device
 
 ```java
 private Device(String deviceId, DeviceStatus status, SymmetricKey symmetricKey) throws NoSuchAlgorithmException, IllegalArgumentException;
 ```
-**SRS_SERVICE_SDK_JAVA_DEVICE_12_004: [** The constructor shall throw IllegalArgumentException if the input string is empty or null **]**
+**SRS_SERVICE_SDK_JAVA_DEVICE_12_004: [**The constructor shall throw IllegalArgumentException if the input string is empty or null.**]**
 
-**SRS_SERVICE_SDK_JAVA_DEVICE_12_005: [** If the input symmetric key is empty, the constructor shall create a new SymmetricKey instance using AES encryption and store it into a member variable **]**
+**SRS_SERVICE_SDK_JAVA_DEVICE_12_005: [**If the input symmetric key is empty, the constructor shall create a new SymmetricKey instance using AES encryption and store it into a member variable.**]**
 
-**SRS_SERVICE_SDK_JAVA_DEVICE_15_007: [** The constructor shall store the input device status and symmetric key into a member variable **]**
+**SRS_SERVICE_SDK_JAVA_DEVICE_12_006: [**The constructor shall initialize all properties to default values.**]**
 
-**SRS_SERVICE_SDK_JAVA_DEVICE_12_006: [** The constructor shall initialize all properties to default values **]**
-
-
-```java
-public static Device createCertificateSecuredDevice(String deviceId, DeviceStatus status)
-```
-**SRS_SERVICE_SDK_JAVA_DEVICE_34_008: [**The function shall throw IllegalArgumentException if the device Id is empty or null**]**
+**SRS_SERVICE_SDK_JAVA_DEVICE_15_007: [**The constructor shall store the input device status and symmetric key into a member variable.**]**
 
 
 ```java
-public static Device createSelfSignedDevice(String deviceId, DeviceStatus status, String primaryThumbprint, String secondaryThumbprint)
+private Device(String deviceId, AuthenticationType authenticationType)
 ```
-**SRS_SERVICE_SDK_JAVA_DEVICE_34_010: [**The function shall throw IllegalArgumentException if the device Id is empty or null**]**
+**SRS_SERVICE_SDK_JAVA_DEVICE_34_011: [**If the provided authenticationType is certificate authority, no symmetric key shall be generated and no thumbprint shall be generated**]**
+
+**SRS_SERVICE_SDK_JAVA_DEVICE_34_012: [**If the provided authenticationType is sas, a symmetric key shall be generated but no thumbprint shall be generated**]**
+
+**SRS_SERVICE_SDK_JAVA_DEVICE_34_013: [**If the provided authenticationType is self signed, a thumbprint shall be generated but no symmetric key shall be generated**]**
 
 
 ```java
-private Device(String deviceId, DeviceStatus status)
+public Device(DeviceParser parser)
 ```
-**SRS_SERVICE_SDK_JAVA_DEVICE_34_009: [**The function shall set the authentication to use Certificate Authority signed certificates**]**
+**SRS_SERVICE_SDK_JAVA_DEVICE_34_014: [**This constructor will create a new Device object using the values within the provided parser.**]**
+
+**SRS_SERVICE_SDK_JAVA_DEVICE_34_015: [**If the provided parser is missing a value for its authentication or its device Id, an IllegalArgumentException shall be thrown.**]**
+
+
+### toDeviceParser
+```java
+public DeviceParser toDeviceParser()
+```
+**SRS_SERVICE_SDK_JAVA_DEVICE_34_016: [**This method shall return a new instance of a DeviceParser object that is populated using the properties of this.**]**

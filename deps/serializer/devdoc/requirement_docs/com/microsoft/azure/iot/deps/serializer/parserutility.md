@@ -27,6 +27,7 @@ class ParserUtility
     
     protected static Date getDateTimeUtc(String dataTime) throws IllegalArgumentException;
     protected static Date getDateTimeOffset(String dataTime) throws IllegalArgumentException;
+    public static Date getSimpleDateTime(String dataTime) throws IllegalArgumentException
 
     protected static JsonElement mapToJsonElement(Map<String, Object> map);
 }
@@ -161,6 +162,39 @@ protected static Date getDateTimeOffset(String dataTime) throws IllegalArgumentE
 **SRS_PARSER_UTILITY_21_023: [**The getDateTimeOffset shall parse the provide string using `UTC` timezone.**]**  
 **SRS_PARSER_UTILITY_21_024: [**The getDateTimeOffset shall parse the provide string using the data format `2016-06-01T21:22:41+00:00`.**]**  
 **SRS_PARSER_UTILITY_21_025: [**If the provide string is null, empty or contains an invalid data format, the getDateTimeOffset shall throw IllegalArgumentException.**]**  
+
+### getSimpleDateTime
+
+```java
+/**
+ * Helper to convert the provided string into a simple Date.
+ * Expected format:
+ *      "2016-01-21T11:05:21"
+ *
+ * @param dataTime is the string with the date and time
+ * @return Date parsed from the string
+ * @throws IllegalArgumentException if the date and time in the string is not in the correct format.
+ */
+public static Date getSimpleDateTime(String dataTime) throws IllegalArgumentException
+```
+**SRS_PARSER_UTILITY_34_040: [**If the provided string is null, empty or contains an invalid data format, the getSimpleDateTime shall throw IllegalArgumentException.**]**
+**SRS_PARSER_UTILITY_34_041: [**An IllegalArgumentException shall be thrown if the provided string is not in the format "yyyy-MM-dd'T'HH:mm:ss".**]**
+
+
+
+```java
+/**
+ * Convert from a date object back into a string representation
+ * Expected format of returned string:
+ *      "2016-01-21T11:05:21"
+ *
+ * @param date the date to convert into a string
+ * @return the date represented as a string
+ */
+public static String getSimpleDateStringFromDate(Date date) throws IllegalArgumentException
+**SRS_PARSER_UTILITY_34_042: [**If the provided date is null, an IllegalArgumentException shall be thrown.**]**
+**SRS_PARSER_UTILITY_34_043: [**The provided date will be converted into this format: "yyyy-MM-dd'T'HH:mm:ss".**]**
+
 
 ### mapToJsonElement
 ```java
