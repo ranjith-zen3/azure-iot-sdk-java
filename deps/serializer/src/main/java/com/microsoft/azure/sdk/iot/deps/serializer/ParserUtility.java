@@ -288,6 +288,57 @@ public class ParserUtility
     }
 
     /**
+     * Helper to convert the provided string into a simple Date.
+     * Expected format:
+     *      "2016-01-21T11:05:21"
+     *
+     * @param dataTime is the string with the date and time
+     * @return Date parsed from the string
+     * @throws IllegalArgumentException if the date and time in the string is not in the correct format.
+     */
+    public static Date getSimpleDateTime(String dataTime) throws IllegalArgumentException
+    {
+        Date simpleDateTime;
+        SimpleDateFormat dateFormat = new SimpleDateFormat(SIMPLEDATEFORMAT);
+
+        //Codes_SRS_PARSER_UTILITY_21_040: [If the provided string is null, empty or contains an invalid data format, the getSimpleDateTime shall throw IllegalArgumentException.]
+        if((dataTime == null) || dataTime.isEmpty())
+        {
+            throw new IllegalArgumentException("date is null or empty");
+        }
+
+        try
+        {
+            simpleDateTime = dateFormat.parse(dataTime);
+        }
+        catch (ParseException e)
+        {
+            //Codes_SRS_PARSER_UTILITY_21_041: [An IllegalArgumentException shall be thrown if the provided string is not in the format "yyyy-MM-dd'T'HH:mm:ss".]
+            throw new IllegalArgumentException("invalid time:" + e.toString());
+        }
+
+        return simpleDateTime;
+    }
+
+    /**
+     * Convert from a date object back into a string representation
+     * Expected format of returned string:
+     *      "2016-01-21T11:05:21"
+     *
+     * @param date the date to convert into a string
+     * @return the date represented as a string
+     */
+    public static String getSimpleDateStringFromDate(Date date)
+    {
+        if (date == null)
+        {
+            //Codes_SRS_PARSER_UTILITY_21_042: [If the provided date is null, an IllegalArgumentException shall be thrown.]
+            throw new IllegalArgumentException("The provided date cannot be null");
+        }
+
+        //Codes_SRS_PARSER_UTILITY_34_043: [The provided date will be converted into this format: "yyyy-MM-dd'T'HH:mm:ss".]
+        return new SimpleDateFormat(SIMPLEDATEFORMAT).format(date);
+    }
 
     /**
      * Helper to convert a provided map in to a JsonElement, including sub-maps.
